@@ -12,7 +12,7 @@ type Product = {
   imageURL: string;
 };
 
-const UA = 'FngApp/1.0 (contact: prateekpatnaikcomp@gmail.com)';
+const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
 
 function ListItem({ item }: { item: Product }) {
   return (
