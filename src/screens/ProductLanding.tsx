@@ -1,22 +1,57 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { View, Text, StyleSheet, Button } from 'react-native';
-import { ProductStackParamList } from '../navigators/types';
+import { FlashList } from '@shopify/flash-list';
+import { useEffect, useState } from 'react';
+import { View, StyleSheet, Image, Text } from 'react-native';
 
-type HomeScreenProps = NativeStackScreenProps<
-  ProductStackParamList,
-  'ProductLanding'
->;
+const data = require('../mockData/fruits_vegetables_500.json');
 
-export function ProductLanding({ navigation }: HomeScreenProps) {
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  type: 'fruit' | 'vegetable';
+  imageURL: string;
+};
+
+const UA = 'FngApp/1.0 (contact: prateekpatnaikcomp@gmail.com)';
+
+function ListItem({ item }: { item: Product }) {
+  return (
+    <View style={styles.m16}>
+      <Image
+        resizeMode="cover"
+        style={styles.image}
+        source={{
+          uri: item.imageURL,
+          cache: 'force-cache',
+          headers: { 'User-Agent': UA },
+        }}
+        onError={({ nativeEvent }) => {
+          console.log(item.name, nativeEvent.error);
+        }}
+      />
+      <View style={styles.mt8}>
+        <Text style={styles.productNameText}>{item.name}</Text>
+        <Text style={styles.productPriceText}>₹{item.price}</Text>
+      </View>
+    </View>
+  );
+}
+
+export function ProductLanding() {
+  const [productList, setProductList] = useState<Product[]>([]);
+
+  useEffect(() => {
+    setProductList(data.slice(0, 100));
+  }, []);
+
   return (
     <View style={styles.profileContainer}>
-      <Text style={styles.headerText}> Product Landing Screen</Text>
-      <View style={styles.separator} />
-      <Button
-        title="Details"
-        onPress={() => navigation.navigate('ProductDetails')}
+      <FlashList
+        style={styles.flashList}
+        data={productList}
+        numColumns={2}
+        renderItem={ListItem}
       />
-      <View />
     </View>
   );
 }
@@ -27,11 +62,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerText: {
-    fontSize: 24,
-    color: 'black',
+  flashList: {
+    flex: 1,
+    width: '100%',
   },
-  separator: {
-    marginVertical: 8,
+  image: {
+    height: 200,
+    flex: 1,
+    borderRadius: 16,
+    borderColor: 'grey',
+    borderWidth: 1,
+  },
+  productNameText: {
+    fontWeight: 'black',
+    fontSize: 16,
+  },
+  productPriceText: {
+    fontWeight: 'bold',
+  },
+  m16: {
+    margin: 16,
+  },
+  mt8: {
+    marginTop: 8,
   },
 });
