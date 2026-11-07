@@ -14,6 +14,18 @@ PODS:
   - hermes-engine (260318099.0.5):
     - hermes-engine/Pre-built (= 260318099.0.5)
   - hermes-engine/Pre-built (260318099.0.5)
+  - libwebp (1.6.0):
+    - libwebp/demux (= 1.6.0)
+    - libwebp/mux (= 1.6.0)
+    - libwebp/sharpyuv (= 1.6.0)
+    - libwebp/webp (= 1.6.0)
+  - libwebp/demux (1.6.0):
+    - libwebp/webp
+  - libwebp/mux (1.6.0):
+    - libwebp/demux
+  - libwebp/sharpyuv (1.6.0)
+  - libwebp/webp (1.6.0):
+    - libwebp/sharpyuv
   - RCT-Folly (2024.11.18.00):
     - RCT-Folly/Default (= 2024.11.18.00)
     - ReactNativeDependencies
@@ -1813,6 +1825,33 @@ PODS:
     - React-utils (= 0.88.1)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.88.1)
+  - RNFastImage (10.11.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-cxxstableapi
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - SDWebImage (< 6.0, >= 5.21.5)
+    - SDWebImagePhotosPlugin (< 2.0, >= 1.2.0)
+    - SDWebImageSVGCoder (< 2.0, >= 1.7.0)
+    - SDWebImageWebPCoder (< 1.0, >= 0.8.4)
+    - Yoga
   - RNReactNativeHapticFeedback (3.0.0):
     - hermes-engine
     - RCTRequired
@@ -1885,6 +1924,16 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
+  - SDWebImagePhotosPlugin (1.2.1):
+    - SDWebImage/Core (~> 5.10)
+  - SDWebImageSVGCoder (1.8.0):
+    - SDWebImage/Core (~> 5.6)
+  - SDWebImageWebPCoder (0.15.0):
+    - libwebp (~> 1.0)
+    - SDWebImage/Core (~> 5.17)
   - SocketRocket (0.7.1):
     - ReactNativeDependencies
   - Yoga (0.0.0):
@@ -1977,10 +2026,19 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
+  - RNFastImage (from `../node_modules/react-native-fast-image`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - SocketRocket (from `build/rndeps-facades/SocketRocket`)
   - Yoga (from `build/rncore-facades/Yoga`)
+
+SPEC REPOS:
+  trunk:
+    - libwebp
+    - SDWebImage
+    - SDWebImagePhotosPlugin
+    - SDWebImageSVGCoder
+    - SDWebImageWebPCoder
 
 EXTERNAL SOURCES:
   boost:
@@ -2154,6 +2212,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDependencies:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
+  RNFastImage:
+    :path: "../node_modules/react-native-fast-image"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
   RNScreens:
@@ -2171,6 +2231,7 @@ SPEC CHECKSUMS:
   fmt: c7776a2a4b1d7ce88b809a1e4d1f7add0f2369df
   glog: b4427c3119645da795ff09985ba9da909c940c96
   hermes-engine: 79484fc4e58f328d01b9339ef899ca633d3702ee
+  libwebp: af5937a13536ef73f3784d69cc342b98961acf33
   RCT-Folly: d173e541eeb78cad5c81011c1bbf62d5b86b9778
   RCTDeprecation: b4eda76fedc7aca9f3a1f30b82c9d9e06a433602
   RCTRequired: 805a643b94e980f1ea1f9749908893cb2cf57cec
@@ -2249,8 +2310,13 @@ SPEC CHECKSUMS:
   ReactCodegen: 944c3b82977d2940d595087c48c280764515950a
   ReactCommon: b815fa26d04751d8b1a076de6888634fb34fb44e
   ReactNativeDependencies: a5164c3ebbe90d992022b5d9cbabbf770a6d7d05
+  RNFastImage: 168310eaf43093a234f9754836b349c3d709ad6e
   RNReactNativeHapticFeedback: 346a4a760619468969f0e4ce5d0c87cf6674875d
   RNScreens: 67fd45f1f30aa2849ab847156c133bd592a26533
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
+  SDWebImagePhotosPlugin: aaf5bc35fd49b66876de58c33eeb6e38b50920e5
+  SDWebImageSVGCoder: 8e10c8f6cc879c7dfb317b284e13dd589379f01c
+  SDWebImageWebPCoder: 0e06e365080397465cc73a7a9b472d8a3bd0f377
   SocketRocket: d57b1af80c029e12a75cd9b218287c67381e4593
   Yoga: 58b502c52b14ad3c4468805d461fc37d275c2a42
 

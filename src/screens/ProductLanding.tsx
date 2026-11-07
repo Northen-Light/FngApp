@@ -1,6 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
+import FastImage from 'react-native-fast-image';
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, Text } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 
 const data = require('../mockData/fruits_vegetables_500.json');
 
@@ -17,12 +18,13 @@ const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
 function ListItem({ item }: { item: Product }) {
   return (
     <View style={styles.m16}>
-      <Image
-        resizeMode="cover"
+      <FastImage
+        recyclingKey={item.id.toString()}
+        transition
+        objectFit="cover"
         style={styles.image}
         source={{
           uri: item.imageURL,
-          cache: 'force-cache',
           headers: { 'User-Agent': UA },
         }}
         onError={({ nativeEvent }) => {
