@@ -1,11 +1,10 @@
 import { FlashList } from '@shopify/flash-list';
 import FastImage from 'react-native-fast-image';
-import { useEffect, useState } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import { fetchProductList } from '../network/fetchProductList';
 
-const data = require('../mockData/fruits_vegetables_500.json');
-
-type Product = {
+export type Product = {
   id: number;
   name: string;
   price: number;
@@ -14,6 +13,7 @@ type Product = {
 };
 
 const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
+const PAGE_ITEMS = 100;
 
 function ListItem({ item }: { item: Product }) {
   return (
@@ -41,18 +41,51 @@ function ListItem({ item }: { item: Product }) {
 
 export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const pageNumber = useRef(0);
+  const isInitialLoad = useRef(true);
+  const isLoading = useRef(false);
+  const hasMore = useRef(true);
+
+  const loadMore = useCallback(async () => {
+    setLoading(true);
+    isLoading.current = true;
+
+    try {
+      const response = await fetchProductList(pageNumber.current, PAGE_ITEMS);
+      setProductList(data => [...data, ...response.data]);
+      hasMore.current = !response.pageEnd;
+    } finally {
+      isLoading.current = false;
+      isInitialLoad.current = false;
+      pageNumber.current += 1;
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    setProductList(data.slice(0, 100));
-  }, []);
+    loadMore();
+  }, [loadMore]);
+
+  const onEndReachedCallback = async () => {
+    if (isInitialLoad.current || isLoading.current || !hasMore.current) return;
+
+    loadMore();
+  };
 
   return (
     <View style={styles.profileContainer}>
       <FlashList
-        style={styles.flashList}
-        data={productList}
         numColumns={2}
+        data={productList}
         renderItem={ListItem}
+        style={styles.flashList}
+        onEndReachedThreshold={0.2}
+        onEndReached={onEndReachedCallback}
+        ListFooterComponent={
+          <ActivityIndicator size="large" color="blue" animating={loading} />
+        }
       />
     </View>
   );

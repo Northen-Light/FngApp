@@ -46,7 +46,7 @@ export function BottomTabs() {
                 }
               : {
                   type: 'image',
-                  source: require('../../assets/house.png'),
+                  source: require('@assets/house.png'),
                 },
         }}
       />
@@ -62,7 +62,7 @@ export function BottomTabs() {
                 }
               : {
                   type: 'image',
-                  source: require('../../assets/shopping-cart.png'),
+                  source: require('@assets/shopping-cart.png'),
                 },
         }}
       />
@@ -78,7 +78,7 @@ export function BottomTabs() {
                 }
               : {
                   type: 'image',
-                  source: require('../../assets/user.png'),
+                  source: require('@assets/user.png'),
                 },
         }}
       />
