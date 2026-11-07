@@ -18,7 +18,7 @@ export const fetchProductList = (
     setTimeout(() => {
       res({
         data: data.slice(start, end),
-        pageEnd: end === 500,
+        pageEnd: end === data.length,
       });
     }, 2000);
   });
