@@ -1,6 +1,6 @@
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { ReactElement } from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-screens/experimental';
 import { Cart } from '../screens/Cart';
 import { Profile } from '../screens/Profile';
@@ -17,9 +17,11 @@ const hapticFeedbackOptions = {
 
 function ScreenLayout({ children }: { children: ReactElement }) {
   return (
-    <SafeAreaView edges={{ bottom: true }} insetType="interface">
-      {children}
-    </SafeAreaView>
+    <View style={styles.rootScreenContainer}>
+      <SafeAreaView edges={{ bottom: true }} insetType="interface">
+        {children}
+      </SafeAreaView>
+    </View>
   );
 }
 export function BottomTabs() {
@@ -32,7 +34,7 @@ export function BottomTabs() {
           }
         },
       })}
-      screenLayout={Platform.OS === 'android' ? ScreenLayout : undefined}
+      screenLayout={ScreenLayout}
     >
       <Tab.Screen
         name="Home"
@@ -85,3 +87,10 @@ export function BottomTabs() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  rootScreenContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+});

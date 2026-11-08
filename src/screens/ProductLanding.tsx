@@ -1,8 +1,22 @@
 import { FlashList } from '@shopify/flash-list';
 import FastImage from 'react-native-fast-image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  ActivityIndicator,
+  Button,
+} from 'react-native';
 import { fetchProductList } from '../network/fetchProductList';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { RadioGroupFilter } from '../components/RadioGroupFilter';
+import { AccordianMultiSelectFilter } from '../components/AccordianMultiSelectFilter';
+import type {
+  FilterSelect,
+  Filter,
+} from '../components/AccordianMultiSelectFilter';
 
 export type Product = {
   id: number;
@@ -14,6 +28,23 @@ export type Product = {
 
 const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
 const PAGE_ITEMS = 100;
+const PRICE_FILTER_ITEMS = [
+  { id: 1, text: 'Low : (₹0-150)' },
+  { id: 2, text: 'Medium : (₹150-275)' },
+  { id: 3, text: 'High : (₹275+)' },
+];
+const RADIO_GROUP_FILTER_HEADER_TEXT = 'Select price range';
+
+const FILTERS: Filter[] = [
+  {
+    id: 1,
+    type: 'product',
+    params: [
+      { id: 11, name: 'fruit' },
+      { id: 12, name: 'vegetable' },
+    ],
+  },
+];
 
 function ListItem({ item }: { item: Product }) {
   return (
@@ -74,8 +105,52 @@ export function ProductLanding() {
     loadMore();
   };
 
+  const [selected, setSelected] = useState(0);
+  const [accordianOpenList, setAccordianOpenList] = useState<boolean[]>(
+    new Array(FILTERS.length).fill(false),
+  );
+  const [filterSelectList, setFilterSelectList] = useState(
+    FILTERS.map(
+      (filter): FilterSelect => ({
+        id: filter.id,
+        selected: new Array(filter.params.length).fill(false),
+      }),
+    ),
+  );
+
+  const [filterType, setFilterType] = useState<
+    'RADIO_GROUP' | 'MULTI_SELECT' | null
+  >(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const closeBottomSheet = () => {
+    setFilterType(null);
+    bottomSheetRef.current?.close();
+  };
+
+  const onAccordianOpenListChange = (index: number) => {
+    const opened = [...accordianOpenList];
+    opened[index] = !opened[index];
+    setAccordianOpenList(opened);
+  };
+
+  const onFilterSelectListChange = (outerIndex: number, innerIndex: number) => {
+    const filterSelectedCopy = [...filterSelectList];
+    filterSelectedCopy[outerIndex].selected[innerIndex] =
+      !filterSelectedCopy[outerIndex].selected[innerIndex];
+    setFilterSelectList(filterSelectedCopy);
+  };
+
+  useEffect(() => {
+    if (filterType !== null) {
+      bottomSheetRef.current?.expand();
+    }
+  }, [filterType]);
+
   return (
-    <View style={styles.profileContainer}>
+    <GestureHandlerRootView style={styles.profileContainer}>
+      <Button title="price" onPress={() => setFilterType('RADIO_GROUP')} />
+      <Button title="filter" onPress={() => setFilterType('MULTI_SELECT')} />
       <FlashList
         numColumns={2}
         data={productList}
@@ -87,7 +162,42 @@ export function ProductLanding() {
           <ActivityIndicator size="large" color="blue" animating={loading} />
         }
       />
-    </View>
+      <BottomSheet
+        onChange={(index: number) => {
+          if (index === -1) {
+            setFilterType(null);
+          }
+        }}
+        ref={bottomSheetRef}
+        enableDynamicSizing
+        enablePanDownToClose
+        index={-1}
+      >
+        <BottomSheetView style={styles.bottomSheetView}>
+          {filterType === 'RADIO_GROUP' ? (
+            <RadioGroupFilter
+              selected={selected}
+              items={PRICE_FILTER_ITEMS}
+              onClose={closeBottomSheet}
+              onSelect={index => {
+                setSelected(index);
+                closeBottomSheet();
+              }}
+              headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
+            />
+          ) : (
+            <AccordianMultiSelectFilter
+              filters={FILTERS}
+              handleClose={closeBottomSheet}
+              filterSelectList={filterSelectList}
+              accordianOpenList={accordianOpenList}
+              onFilterSelectListChange={onFilterSelectListChange}
+              onAccordianOpenListChange={onAccordianOpenListChange}
+            />
+          )}
+        </BottomSheetView>
+      </BottomSheet>
+    </GestureHandlerRootView>
   );
 }
 
@@ -120,5 +230,8 @@ const styles = StyleSheet.create({
   },
   mt8: {
     marginTop: 8,
+  },
+  bottomSheetView: {
+    paddingVertical: 32,
   },
 });
