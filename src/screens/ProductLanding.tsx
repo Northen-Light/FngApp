@@ -154,27 +154,41 @@ export function ProductLanding() {
       >
         <BottomSheetScrollView>
           <BottomSheetView style={styles.bottomSheetView}>
-            {filterType === 'RADIO_GROUP' ? (
-              <RadioGroupFilter
-                items={PRICE_FILTER_ITEMS}
-                selected={selected}
-                headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
-                onSelect={index => {
-                  setSelected(index);
-                  closeBottomSheet();
-                }}
-                onClose={closeBottomSheet}
-              />
-            ) : (
-              <AccordianMultiSelectFilter
-                filters={FILTERS}
-                filterSelectList={filterSelectList}
-                accordianOpenList={accordianOpenList}
-                onAccordianOpenListChange={onAccordianOpenListChange}
-                onFilterSelectListChange={onFilterSelectListChange}
-                handleClose={closeBottomSheet}
-              />
-            )}
+            {(function () {
+              switch (filterType) {
+                case 'RADIO_GROUP': {
+                  return (
+                    <RadioGroupFilter
+                      items={PRICE_FILTER_ITEMS}
+                      selected={selected}
+                      headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
+                      onSelect={index => {
+                        setSelected(index);
+                        closeBottomSheet();
+                      }}
+                      onClose={closeBottomSheet}
+                    />
+                  );
+                }
+
+                case 'MULTI_SELECT': {
+                  return (
+                    <AccordianMultiSelectFilter
+                      filters={FILTERS}
+                      filterSelectList={filterSelectList}
+                      accordianOpenList={accordianOpenList}
+                      onAccordianOpenListChange={onAccordianOpenListChange}
+                      onFilterSelectListChange={onFilterSelectListChange}
+                      handleClose={closeBottomSheet}
+                    />
+                  );
+                }
+
+                case null: {
+                  return null;
+                }
+              }
+            })()}
           </BottomSheetView>
         </BottomSheetScrollView>
       </BottomSheet>
