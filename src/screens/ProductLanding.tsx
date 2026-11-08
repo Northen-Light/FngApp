@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import { fetchProductList } from '../network/fetchProductList';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, {
+  BottomSheetScrollView,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
 import { RadioGroupFilter } from '../components/RadioGroupFilter';
 import { AccordianMultiSelectFilter } from '../components/AccordianMultiSelectFilter';
 import type {
@@ -45,30 +48,6 @@ const FILTERS: Filter[] = [
     ],
   },
 ];
-
-function ListItem({ item }: { item: Product }) {
-  return (
-    <View style={styles.m16}>
-      <FastImage
-        recyclingKey={item.id.toString()}
-        transition
-        objectFit="cover"
-        style={styles.image}
-        source={{
-          uri: item.imageURL,
-          headers: { 'User-Agent': UA },
-        }}
-        onError={({ nativeEvent }) => {
-          console.log(item.name, nativeEvent.error);
-        }}
-      />
-      <View style={styles.mt8}>
-        <Text style={styles.productNameText}>{item.name}</Text>
-        <Text style={styles.productPriceText}>₹{item.price}</Text>
-      </View>
-    </View>
-  );
-}
 
 export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
@@ -173,31 +152,57 @@ export function ProductLanding() {
         enablePanDownToClose
         index={-1}
       >
-        <BottomSheetView style={styles.bottomSheetView}>
-          {filterType === 'RADIO_GROUP' ? (
-            <RadioGroupFilter
-              selected={selected}
-              items={PRICE_FILTER_ITEMS}
-              onClose={closeBottomSheet}
-              onSelect={index => {
-                setSelected(index);
-                closeBottomSheet();
-              }}
-              headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
-            />
-          ) : (
-            <AccordianMultiSelectFilter
-              filters={FILTERS}
-              handleClose={closeBottomSheet}
-              filterSelectList={filterSelectList}
-              accordianOpenList={accordianOpenList}
-              onFilterSelectListChange={onFilterSelectListChange}
-              onAccordianOpenListChange={onAccordianOpenListChange}
-            />
-          )}
-        </BottomSheetView>
+        <BottomSheetScrollView>
+          <BottomSheetView style={styles.bottomSheetView}>
+            {filterType === 'RADIO_GROUP' ? (
+              <RadioGroupFilter
+                items={PRICE_FILTER_ITEMS}
+                selected={selected}
+                headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
+                onSelect={index => {
+                  setSelected(index);
+                  closeBottomSheet();
+                }}
+                onClose={closeBottomSheet}
+              />
+            ) : (
+              <AccordianMultiSelectFilter
+                filters={FILTERS}
+                filterSelectList={filterSelectList}
+                accordianOpenList={accordianOpenList}
+                onAccordianOpenListChange={onAccordianOpenListChange}
+                onFilterSelectListChange={onFilterSelectListChange}
+                handleClose={closeBottomSheet}
+              />
+            )}
+          </BottomSheetView>
+        </BottomSheetScrollView>
       </BottomSheet>
     </GestureHandlerRootView>
+  );
+}
+
+function ListItem({ item }: { item: Product }) {
+  return (
+    <View style={styles.m16}>
+      <FastImage
+        recyclingKey={item.id.toString()}
+        transition
+        objectFit="cover"
+        style={styles.image}
+        source={{
+          uri: item.imageURL,
+          headers: { 'User-Agent': UA },
+        }}
+        onError={({ nativeEvent }) => {
+          console.log(item.name, nativeEvent.error);
+        }}
+      />
+      <View style={styles.mt8}>
+        <Text style={styles.productNameText}>{item.name}</Text>
+        <Text style={styles.productPriceText}>₹{item.price}</Text>
+      </View>
+    </View>
   );
 }
 

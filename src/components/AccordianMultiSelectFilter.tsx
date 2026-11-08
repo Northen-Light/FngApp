@@ -20,8 +20,8 @@ export type FilterSelect = {
 type AccordianMultiSelectFilterProps = {
   filters: Filter[];
   accordianOpenList: boolean[];
-  onAccordianOpenListChange: (index: number) => void;
   filterSelectList: FilterSelect[];
+  onAccordianOpenListChange: (index: number) => void;
   onFilterSelectListChange: (outerIndex: number, innerIndex: number) => void;
   handleClose: () => void;
 };
@@ -29,8 +29,8 @@ type AccordianMultiSelectFilterProps = {
 export function AccordianMultiSelectFilter({
   filters,
   accordianOpenList,
-  onAccordianOpenListChange,
   filterSelectList,
+  onAccordianOpenListChange,
   onFilterSelectListChange,
   handleClose,
 }: AccordianMultiSelectFilterProps) {
