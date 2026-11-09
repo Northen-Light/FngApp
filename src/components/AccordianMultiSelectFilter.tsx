@@ -19,19 +19,19 @@ export type FilterSelect = {
 
 type AccordianMultiSelectFilterProps = {
   filters: Filter[];
-  accordianOpenList: boolean[];
-  filterSelectList: FilterSelect[];
-  onAccordianOpenListChange: (index: number) => void;
-  onFilterSelectListChange: (outerIndex: number, innerIndex: number) => void;
+  accordianOpenedList: boolean[];
+  filterSelectedList: FilterSelect[];
+  onAccordianOpenedListChange: (index: number) => void;
+  onFilterSelectedListChange: (outerIndex: number, innerIndex: number) => void;
   handleClose: () => void;
 };
 
 export function AccordianMultiSelectFilter({
   filters,
-  accordianOpenList,
-  filterSelectList,
-  onAccordianOpenListChange,
-  onFilterSelectListChange,
+  accordianOpenedList,
+  filterSelectedList,
+  onAccordianOpenedListChange,
+  onFilterSelectedListChange,
   handleClose,
 }: AccordianMultiSelectFilterProps) {
   return (
@@ -59,37 +59,37 @@ export function AccordianMultiSelectFilter({
           <View key={filter.id}>
             <Pressable
               style={styles.accordianHeaderContainer}
-              onPress={() => onAccordianOpenListChange(outerIndex)}
+              onPress={() => onAccordianOpenedListChange(outerIndex)}
             >
               <Text style={styles.itemText}>{filter.type.toUpperCase()}</Text>
               <FastImage
                 style={styles.arrowIcon}
                 source={
-                  accordianOpenList[outerIndex]
+                  accordianOpenedList[outerIndex]
                     ? require('@assets/arrow-up.png')
                     : require('@assets/arrow-down.png')
                 }
               />
             </Pressable>
-            {accordianOpenList[outerIndex] && (
+            {accordianOpenedList[outerIndex] && (
               <View style={styles.accordianBodyContainer}>
                 {filter.params.map((param, innerIndex) => (
                   <Pressable
                     key={param.id}
                     style={[
                       styles.capsule,
-                      filterSelectList[outerIndex].selected[innerIndex]
+                      filterSelectedList[outerIndex].selected[innerIndex]
                         ? styles.bgBlack
                         : {},
                     ]}
                     onPress={() =>
-                      onFilterSelectListChange(outerIndex, innerIndex)
+                      onFilterSelectedListChange(outerIndex, innerIndex)
                     }
                   >
                     <Text
                       style={[
                         styles.itemText,
-                        filterSelectList[outerIndex].selected[innerIndex]
+                        filterSelectedList[outerIndex].selected[innerIndex]
                           ? styles.textColorWhite
                           : {},
                       ]}

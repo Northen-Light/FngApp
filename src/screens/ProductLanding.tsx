@@ -74,21 +74,21 @@ export function ProductLanding() {
     }
   }, []);
 
-  useEffect(() => {
-    loadMore();
-  }, [loadMore]);
-
   const onEndReachedCallback = async () => {
     if (isInitialLoad.current || isLoading.current || !hasMore.current) return;
 
     loadMore();
   };
 
-  const [selected, setSelected] = useState(0);
-  const [accordianOpenList, setAccordianOpenList] = useState<boolean[]>(
+  useEffect(() => {
+    loadMore();
+  }, [loadMore]);
+
+  const [priceSelected, setPriceSelected] = useState(0);
+  const [accordianOpenedList, setAccordianOpenedList] = useState<boolean[]>(
     new Array(FILTERS.length).fill(false),
   );
-  const [filterSelectList, setFilterSelectList] = useState(
+  const [filterSelectedList, setFilterSelectedList] = useState(
     FILTERS.map(
       (filter): FilterSelect => ({
         id: filter.id,
@@ -96,10 +96,10 @@ export function ProductLanding() {
       }),
     ),
   );
-
   const [filterType, setFilterType] = useState<
-    'RADIO_GROUP' | 'MULTI_SELECT' | null
+    'PRICE_FILTER' | 'MULTI_SELECT' | null
   >(null);
+
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const closeBottomSheet = () => {
@@ -107,17 +107,20 @@ export function ProductLanding() {
     bottomSheetRef.current?.close();
   };
 
-  const onAccordianOpenListChange = (index: number) => {
-    const opened = [...accordianOpenList];
+  const onAccordianOpenedListChange = (index: number) => {
+    const opened = [...accordianOpenedList];
     opened[index] = !opened[index];
-    setAccordianOpenList(opened);
+    setAccordianOpenedList(opened);
   };
 
-  const onFilterSelectListChange = (outerIndex: number, innerIndex: number) => {
-    const filterSelectedCopy = [...filterSelectList];
+  const onFilterSelectedListChange = (
+    outerIndex: number,
+    innerIndex: number,
+  ) => {
+    const filterSelectedCopy = [...filterSelectedList];
     filterSelectedCopy[outerIndex].selected[innerIndex] =
       !filterSelectedCopy[outerIndex].selected[innerIndex];
-    setFilterSelectList(filterSelectedCopy);
+    setFilterSelectedList(filterSelectedCopy);
   };
 
   useEffect(() => {
@@ -128,7 +131,7 @@ export function ProductLanding() {
 
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
-      <Button title="price" onPress={() => setFilterType('RADIO_GROUP')} />
+      <Button title="price" onPress={() => setFilterType('PRICE_FILTER')} />
       <Button title="filter" onPress={() => setFilterType('MULTI_SELECT')} />
       <FlashList
         numColumns={2}
@@ -156,14 +159,14 @@ export function ProductLanding() {
           <BottomSheetView style={styles.bottomSheetView}>
             {(function () {
               switch (filterType) {
-                case 'RADIO_GROUP': {
+                case 'PRICE_FILTER': {
                   return (
                     <RadioGroupFilter
                       items={PRICE_FILTER_ITEMS}
-                      selected={selected}
+                      selected={priceSelected}
                       headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
                       onSelect={index => {
-                        setSelected(index);
+                        setPriceSelected(index);
                         closeBottomSheet();
                       }}
                       onClose={closeBottomSheet}
@@ -175,10 +178,10 @@ export function ProductLanding() {
                   return (
                     <AccordianMultiSelectFilter
                       filters={FILTERS}
-                      filterSelectList={filterSelectList}
-                      accordianOpenList={accordianOpenList}
-                      onAccordianOpenListChange={onAccordianOpenListChange}
-                      onFilterSelectListChange={onFilterSelectListChange}
+                      filterSelectedList={filterSelectedList}
+                      accordianOpenedList={accordianOpenedList}
+                      onAccordianOpenedListChange={onAccordianOpenedListChange}
+                      onFilterSelectedListChange={onFilterSelectedListChange}
                       handleClose={closeBottomSheet}
                     />
                   );
