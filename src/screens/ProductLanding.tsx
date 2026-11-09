@@ -97,7 +97,7 @@ export function ProductLanding() {
     ),
   );
   const [filterType, setFilterType] = useState<
-    'PRICE_FILTER' | 'MULTI_SELECT' | null
+    'PRICE_FILTER' | 'MULTI_SELECT_FILTER' | null
   >(null);
 
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -132,7 +132,10 @@ export function ProductLanding() {
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
       <Button title="price" onPress={() => setFilterType('PRICE_FILTER')} />
-      <Button title="filter" onPress={() => setFilterType('MULTI_SELECT')} />
+      <Button
+        title="filter"
+        onPress={() => setFilterType('MULTI_SELECT_FILTER')}
+      />
       <FlashList
         numColumns={2}
         data={productList}
@@ -174,7 +177,7 @@ export function ProductLanding() {
                   );
                 }
 
-                case 'MULTI_SELECT': {
+                case 'MULTI_SELECT_FILTER': {
                   return (
                     <AccordianMultiSelectFilter
                       filters={FILTERS}
