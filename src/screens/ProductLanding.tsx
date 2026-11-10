@@ -124,19 +124,19 @@ export function ProductLanding() {
 
   const onAccordianOpenedListChange = useCallback(
     (index: number) => {
-      const opened = [...accordianOpenedList];
-      opened[index] = !opened[index];
-      setAccordianOpenedList(opened);
+      const list = [...accordianOpenedList];
+      list[index] = !list[index];
+      setAccordianOpenedList(list);
     },
     [accordianOpenedList],
   );
 
   const onFilterSelectedListChange = useCallback(
     (outerIndex: number, innerIndex: number) => {
-      const filterSelectedCopy = [...filterSelectedList];
-      filterSelectedCopy[outerIndex].selected[innerIndex] =
-        !filterSelectedCopy[outerIndex].selected[innerIndex];
-      setFilterSelectedList(filterSelectedCopy);
+      const list = [...filterSelectedList];
+      list[outerIndex].selected[innerIndex] =
+        !list[outerIndex].selected[innerIndex];
+      setFilterSelectedList(list);
     },
     [filterSelectedList],
   );
@@ -181,10 +181,9 @@ export function ProductLanding() {
             key={filter.id}
             style={styles.boxContainer}
             onPress={() => {
-              const accordianOpenedListCopy = [...accordianOpenedList];
-              accordianOpenedListCopy[0] = true;
-
-              setAccordianOpenedList(accordianOpenedListCopy);
+              const list = [...accordianOpenedList];
+              list[0] = true;
+              setAccordianOpenedList(list);
               setFilterType('MULTI_SELECT_FILTER');
             }}
           >
