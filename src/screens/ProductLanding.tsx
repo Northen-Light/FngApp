@@ -99,7 +99,7 @@ export function ProductLanding() {
     loadMore();
   }, [loadMore]);
 
-  const [selectedPriceFilter, setselectedPriceFilter] = useState(0);
+  const [priceFilterSelected, setPriceFilterSelected] = useState(0);
   const [accordianOpenedList, setAccordianOpenedList] = useState<boolean[]>(
     new Array(FILTERS.length).fill(false),
   );
@@ -217,10 +217,10 @@ export function ProductLanding() {
         return (
           <RadioGroupFilter
             items={PRICE_FILTER_ITEMS}
-            selected={selectedPriceFilter}
+            selected={priceFilterSelected}
             headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
             onSelect={index => {
-              setselectedPriceFilter(index);
+              setPriceFilterSelected(index);
               closeBottomSheet();
             }}
             onClose={closeBottomSheet}
@@ -251,7 +251,7 @@ export function ProductLanding() {
     filterType,
     onAccordianOpenedListChange,
     onFilterSelectedListChange,
-    selectedPriceFilter,
+    priceFilterSelected,
   ]);
 
   return (
