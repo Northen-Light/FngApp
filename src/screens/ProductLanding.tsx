@@ -6,7 +6,7 @@ import {
   StyleSheet,
   Text,
   ActivityIndicator,
-  Button,
+  Pressable,
 } from 'react-native';
 import { fetchProductList } from '../network/fetchProductList';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -29,6 +29,8 @@ export type Product = {
   imageURL: string;
 };
 
+export type ListItem = { type: 'Product'; data: Product } | { type: 'Filter' };
+
 const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
 const PAGE_ITEMS = 100;
 const PRICE_FILTER_ITEMS = [
@@ -41,7 +43,7 @@ const RADIO_GROUP_FILTER_HEADER_TEXT = 'Select price range';
 const FILTERS: Filter[] = [
   {
     id: 1,
-    type: 'product',
+    type: 'Product',
     params: [
       { id: 11, name: 'fruit' },
       { id: 12, name: 'vegetable' },
@@ -51,6 +53,7 @@ const FILTERS: Filter[] = [
 
 export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
+  const [listData, setListData] = useState<ListItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   const pageNumber = useRef(0);
@@ -81,10 +84,22 @@ export function ProductLanding() {
   };
 
   useEffect(() => {
+    setListData([
+      { type: 'Filter' },
+      ...productList.map(
+        (product): ListItem => ({
+          type: 'Product',
+          data: product,
+        }),
+      ),
+    ]);
+  }, [productList]);
+
+  useEffect(() => {
     loadMore();
   }, [loadMore]);
 
-  const [priceSelected, setPriceSelected] = useState(0);
+  const [selectedPriceFilter, setselectedPriceFilter] = useState(0);
   const [accordianOpenedList, setAccordianOpenedList] = useState<boolean[]>(
     new Array(FILTERS.length).fill(false),
   );
@@ -107,20 +122,29 @@ export function ProductLanding() {
     bottomSheetRef.current?.close();
   };
 
-  const onAccordianOpenedListChange = (index: number) => {
-    const opened = [...accordianOpenedList];
-    opened[index] = !opened[index];
-    setAccordianOpenedList(opened);
-  };
+  const onAccordianOpenedListChange = useCallback(
+    (index: number) => {
+      const opened = [...accordianOpenedList];
+      opened[index] = !opened[index];
+      setAccordianOpenedList(opened);
+    },
+    [accordianOpenedList],
+  );
 
-  const onFilterSelectedListChange = (
-    outerIndex: number,
-    innerIndex: number,
-  ) => {
-    const filterSelectedCopy = [...filterSelectedList];
-    filterSelectedCopy[outerIndex].selected[innerIndex] =
-      !filterSelectedCopy[outerIndex].selected[innerIndex];
-    setFilterSelectedList(filterSelectedCopy);
+  const onFilterSelectedListChange = useCallback(
+    (outerIndex: number, innerIndex: number) => {
+      const filterSelectedCopy = [...filterSelectedList];
+      filterSelectedCopy[outerIndex].selected[innerIndex] =
+        !filterSelectedCopy[outerIndex].selected[innerIndex];
+      setFilterSelectedList(filterSelectedCopy);
+    },
+    [filterSelectedList],
+  );
+
+  const handleBottomSheetChange = (index: number) => {
+    if (index === -1) {
+      setFilterType(null);
+    }
   };
 
   useEffect(() => {
@@ -129,17 +153,119 @@ export function ProductLanding() {
     }
   }, [filterType]);
 
+  const FilterCell = useCallback(() => {
+    return (
+      <View style={styles.filterCellContainer}>
+        <Pressable
+          style={styles.boxContainer}
+          onPress={() => setFilterType('MULTI_SELECT_FILTER')}
+        >
+          <FastImage
+            style={styles.filterIcon}
+            source={require('@assets/filter.png')}
+          />
+          <Text style={styles.font16}>Filter</Text>
+        </Pressable>
+        <Pressable
+          style={styles.boxContainer}
+          onPress={() => setFilterType('PRICE_FILTER')}
+        >
+          <Text style={styles.font16}>Price</Text>
+          <FastImage
+            style={styles.downArrow}
+            source={require('@assets/arrow-down.png')}
+          />
+        </Pressable>
+        {FILTERS.map(filter => (
+          <Pressable
+            key={filter.id}
+            style={styles.boxContainer}
+            onPress={() => {
+              const accordianOpenedListCopy = [...accordianOpenedList];
+              accordianOpenedListCopy[0] = true;
+
+              setAccordianOpenedList(accordianOpenedListCopy);
+              setFilterType('MULTI_SELECT_FILTER');
+            }}
+          >
+            <Text style={styles.font16}>{filter.type}</Text>
+            <FastImage
+              style={styles.downArrow}
+              source={require('@assets/arrow-down.png')}
+            />
+          </Pressable>
+        ))}
+      </View>
+    );
+  }, [accordianOpenedList]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ListItem }) => {
+      switch (item.type) {
+        case 'Filter':
+          return <FilterCell />;
+        case 'Product':
+          return <ListItem item={item.data} />;
+      }
+    },
+    [FilterCell],
+  );
+
+  const RenderFilterView = useCallback(() => {
+    switch (filterType) {
+      case 'PRICE_FILTER': {
+        return (
+          <RadioGroupFilter
+            items={PRICE_FILTER_ITEMS}
+            selected={selectedPriceFilter}
+            headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
+            onSelect={index => {
+              setselectedPriceFilter(index);
+              closeBottomSheet();
+            }}
+            onClose={closeBottomSheet}
+          />
+        );
+      }
+
+      case 'MULTI_SELECT_FILTER': {
+        return (
+          <AccordianMultiSelectFilter
+            filters={FILTERS}
+            filterSelectedList={filterSelectedList}
+            accordianOpenedList={accordianOpenedList}
+            onAccordianOpenedListChange={onAccordianOpenedListChange}
+            onFilterSelectedListChange={onFilterSelectedListChange}
+            handleClose={closeBottomSheet}
+          />
+        );
+      }
+
+      case null: {
+        return null;
+      }
+    }
+  }, [
+    accordianOpenedList,
+    filterSelectedList,
+    filterType,
+    onAccordianOpenedListChange,
+    onFilterSelectedListChange,
+    selectedPriceFilter,
+  ]);
+
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
-      <Button title="price" onPress={() => setFilterType('PRICE_FILTER')} />
-      <Button
-        title="filter"
-        onPress={() => setFilterType('MULTI_SELECT_FILTER')}
-      />
       <FlashList
         numColumns={2}
-        data={productList}
-        renderItem={ListItem}
+        stickyHeaderIndices={[0]}
+        data={listData}
+        overrideItemLayout={(layout, item) => {
+          if (item.type === 'Filter') {
+            layout.span = 2;
+          }
+        }}
+        renderItem={renderItem}
         style={styles.flashList}
         onEndReachedThreshold={0.2}
         onEndReached={onEndReachedCallback}
@@ -148,11 +274,7 @@ export function ProductLanding() {
         }
       />
       <BottomSheet
-        onChange={(index: number) => {
-          if (index === -1) {
-            setFilterType(null);
-          }
-        }}
+        onChange={handleBottomSheetChange}
         ref={bottomSheetRef}
         enableDynamicSizing
         enablePanDownToClose
@@ -160,41 +282,7 @@ export function ProductLanding() {
       >
         <BottomSheetScrollView>
           <BottomSheetView style={styles.bottomSheetView}>
-            {(function () {
-              switch (filterType) {
-                case 'PRICE_FILTER': {
-                  return (
-                    <RadioGroupFilter
-                      items={PRICE_FILTER_ITEMS}
-                      selected={priceSelected}
-                      headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
-                      onSelect={index => {
-                        setPriceSelected(index);
-                        closeBottomSheet();
-                      }}
-                      onClose={closeBottomSheet}
-                    />
-                  );
-                }
-
-                case 'MULTI_SELECT_FILTER': {
-                  return (
-                    <AccordianMultiSelectFilter
-                      filters={FILTERS}
-                      filterSelectedList={filterSelectedList}
-                      accordianOpenedList={accordianOpenedList}
-                      onAccordianOpenedListChange={onAccordianOpenedListChange}
-                      onFilterSelectedListChange={onFilterSelectedListChange}
-                      handleClose={closeBottomSheet}
-                    />
-                  );
-                }
-
-                case null: {
-                  return null;
-                }
-              }
-            })()}
+            {RenderFilterView()}
           </BottomSheetView>
         </BottomSheetScrollView>
       </BottomSheet>
@@ -258,5 +346,27 @@ const styles = StyleSheet.create({
   },
   bottomSheetView: {
     paddingVertical: 32,
+  },
+  filterCellContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    backgroundColor: 'white',
+  },
+  boxContainer: {
+    flexDirection: 'row',
+    marginRight: 16,
+    alignItems: 'center',
+  },
+  filterIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 8,
+  },
+  font16: {
+    fontSize: 16,
+  },
+  downArrow: {
+    width: 24,
+    height: 24,
   },
 });
