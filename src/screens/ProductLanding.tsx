@@ -1,6 +1,6 @@
 import { FlashList } from '@shopify/flash-list';
 import FastImage from 'react-native-fast-image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -290,7 +290,7 @@ export function ProductLanding() {
   );
 }
 
-function ListItem({ item }: { item: Product }) {
+const ListItem = memo(({ item }: { item: Product }) => {
   return (
     <View style={styles.m16}>
       <FastImage
@@ -312,7 +312,7 @@ function ListItem({ item }: { item: Product }) {
       </View>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   profileContainer: {
