@@ -166,6 +166,7 @@ export function ProductLanding() {
           />
           <Text style={styles.font16}>Filter</Text>
         </Pressable>
+
         <Pressable
           style={styles.boxContainer}
           onPress={() => setFilterType('PRICE_FILTER')}
@@ -176,6 +177,7 @@ export function ProductLanding() {
             source={require('@assets/arrow-down.png')}
           />
         </Pressable>
+
         {FILTERS.map(filter => (
           <Pressable
             key={filter.id}
@@ -272,6 +274,7 @@ export function ProductLanding() {
           <ActivityIndicator size="large" color="blue" animating={loading} />
         }
       />
+
       <BottomSheet
         onChange={handleBottomSheetChange}
         ref={bottomSheetRef}
