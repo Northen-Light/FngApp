@@ -34,9 +34,10 @@ export type ListItem = { type: 'Product'; data: Product } | { type: 'Filter' };
 const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
 const PAGE_ITEMS = 100;
 const PRICE_FILTER_ITEMS = [
-  { id: 1, text: 'Low : (₹0-150)' },
-  { id: 2, text: 'Medium : (₹150-275)' },
-  { id: 3, text: 'High : (₹275+)' },
+  { id: 1, name: 'All' },
+  { id: 2, name: 'Low : (₹0-150)' },
+  { id: 3, name: 'Medium : (₹150-275)' },
+  { id: 4, name: 'High : (₹275+)' },
 ];
 const RADIO_GROUP_FILTER_HEADER_TEXT = 'Select price range';
 
@@ -61,26 +62,42 @@ export function ProductLanding() {
   const isLoading = useRef(false);
   const hasMore = useRef(true);
 
-  const loadMore = useCallback(async () => {
-    setLoading(true);
-    isLoading.current = true;
+  const filterOptionsRef = useRef<number[]>([]);
 
-    try {
-      const response = await fetchProductList(pageNumber.current, PAGE_ITEMS);
-      setProductList(data => [...data, ...response.data]);
-      hasMore.current = !response.pageEnd;
-    } finally {
-      isLoading.current = false;
-      isInitialLoad.current = false;
-      pageNumber.current += 1;
-      setLoading(false);
-    }
-  }, []);
+  const loadMore = useCallback(
+    async (filterOptions?: number[], controller?: AbortController) => {
+      setLoading(true);
+      isLoading.current = true;
+
+      try {
+        const response = await fetchProductList(
+          pageNumber.current,
+          PAGE_ITEMS,
+          filterOptions,
+          controller,
+        );
+        setProductList(data => [...data, ...response.data]);
+        hasMore.current = !response.pageEnd;
+      } catch (e) {
+        if (e instanceof Error) {
+          console.log(e.message);
+        } else {
+          console.log('unexpected error', e);
+        }
+      } finally {
+        isLoading.current = false;
+        isInitialLoad.current = false;
+        pageNumber.current += 1;
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   const onEndReachedCallback = async () => {
     if (isInitialLoad.current || isLoading.current || !hasMore.current) return;
 
-    loadMore();
+    loadMore(filterOptionsRef.current);
   };
 
   useEffect(() => {
@@ -94,10 +111,6 @@ export function ProductLanding() {
       ),
     ]);
   }, [productList]);
-
-  useEffect(() => {
-    loadMore();
-  }, [loadMore]);
 
   const [priceFilterSelected, setPriceFilterSelected] = useState(0);
   const [accordianOpenedList, setAccordianOpenedList] = useState<boolean[]>(
@@ -152,6 +165,33 @@ export function ProductLanding() {
       bottomSheetRef.current?.expand();
     }
   }, [filterType]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const filterOptions: number[] = [];
+
+    filterOptions.push(PRICE_FILTER_ITEMS[priceFilterSelected].id);
+
+    FILTERS.forEach((filter, outerIndex) => {
+      filter.params.forEach((param, innerIndex) => {
+        if (filterSelectedList[outerIndex].selected[innerIndex]) {
+          filterOptions.push(param.id);
+        }
+      });
+    });
+
+    pageNumber.current = 0;
+    isInitialLoad.current = false;
+    isLoading.current = false;
+    hasMore.current = true;
+    filterOptionsRef.current = filterOptions;
+    setProductList([]);
+
+    loadMore(filterOptionsRef.current, controller);
+
+    return () => controller.abort();
+  }, [priceFilterSelected, filterSelectedList, loadMore]);
 
   const FilterCell = useCallback(() => {
     return (

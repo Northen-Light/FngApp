@@ -48,7 +48,7 @@ export function RadioGroupFilter({
               {selected === index && <View style={styles.buttonInner} />}
             </View>
 
-            <Text style={styles.itemText}>{item.text}</Text>
+            <Text style={styles.itemText}>{item.name}</Text>
           </Pressable>
         ))}
       </View>
@@ -58,7 +58,7 @@ export function RadioGroupFilter({
 
 type Item = {
   id: number;
-  text: string;
+  name: string;
 };
 
 const styles = StyleSheet.create({
