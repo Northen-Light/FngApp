@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, ActivityIndicator } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -7,7 +7,13 @@ import BottomSheet, {
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
 
-import type { FilterOptions, ListData, Product } from '../types';
+import type {
+  FilterOptions,
+  ListData,
+  Operation,
+  Product,
+  SortOptions,
+} from '../types';
 
 import { fetchProductList } from '../network/fetchProductList';
 import { FilterAndSorting } from '../components/FilterSorting';
@@ -19,17 +25,26 @@ export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
   const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState<boolean[]>(
+    new Array(FILTERS.length).fill(false),
+  );
   const [filterOptions, setFilterOptions] = useState<FilterOptions[]>(
     FILTERS.map(filter => ({ filterId: filter.id, filterValueIds: [] })),
   );
+  const [sortOptions, setSortOptions] = useState<SortOptions[]>([]);
+  const [operation, setOperation] = useState<Operation>('FILTER');
 
   const pageNumber = useRef(0);
   const isInitialLoad = useRef(true);
   const isLoading = useRef(false);
   const hasMore = useRef(true);
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   const loadMore = useCallback(
-    async (options?: FilterOptions[], controller?: AbortController) => {
+    async (
+      options?: { filterOptions: FilterOptions[]; sortOptions: SortOptions[] },
+      controller?: AbortController,
+    ) => {
       setLoading(true);
       isLoading.current = true;
 
@@ -37,7 +52,8 @@ export function ProductLanding() {
         const response = await fetchProductList(
           pageNumber.current,
           PAGE_ITEMS,
-          options,
+          options?.filterOptions,
+          options?.sortOptions,
           controller,
         );
         console.log(response);
@@ -62,7 +78,33 @@ export function ProductLanding() {
   const onEndReachedCallback = async () => {
     if (isInitialLoad.current || isLoading.current || !hasMore.current) return;
 
-    loadMore();
+    loadMore({ filterOptions, sortOptions });
+  };
+
+  const expandBottomSheet = useCallback(
+    () => bottomSheetRef.current?.expand(),
+    [],
+  );
+
+  const closeBottomSheet = useCallback(
+    () => bottomSheetRef.current?.close(),
+    [],
+  );
+
+  const onSelectedFiltersChange = (index: number) => {
+    setSelectedFilters(current => {
+      const next = [...current];
+      next[index] = !next[index];
+      return next;
+    });
+  };
+
+  const onSelectedFiltersSetTrue = (index: number) => {
+    setSelectedFilters(current => {
+      const next = [...current];
+      next[index] = true;
+      return next;
+    });
   };
 
   useEffect(() => {
@@ -77,8 +119,6 @@ export function ProductLanding() {
     ]);
   }, [productList]);
 
-  const bottomSheetRef = useRef<BottomSheet>(null);
-
   useEffect(() => {
     const controller = new AbortController();
 
@@ -88,20 +128,10 @@ export function ProductLanding() {
     hasMore.current = true;
 
     setProductList([]);
-    loadMore(filterOptions, controller);
+    loadMore({ filterOptions, sortOptions }, controller);
 
     return () => controller.abort();
-  }, [filterOptions, loadMore]);
-
-  const expandBottomSheet = useCallback(
-    () => bottomSheetRef.current?.expand(),
-    [],
-  );
-
-  const closeBottomSheet = useCallback(
-    () => bottomSheetRef.current?.close(),
-    [],
-  );
+  }, [filterOptions, sortOptions, loadMore]);
 
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
@@ -114,9 +144,21 @@ export function ProductLanding() {
             layout.span = 2;
           }
         }}
-        renderItem={({ item }) => (
-          <RenderItem item={item} onPressHandler={expandBottomSheet} />
-        )}
+        renderItem={({ item }) => {
+          switch (item.type) {
+            case 'Filter':
+              return (
+                <FilterCell
+                  filters={FILTERS}
+                  onPressHandler={expandBottomSheet}
+                  onSelectedFiltersSetTrue={onSelectedFiltersSetTrue}
+                  setOperation={setOperation}
+                />
+              );
+            case 'Product':
+              return <ListItem item={item.data} />;
+          }
+        }}
         style={styles.flashList}
         onEndReachedThreshold={0.2}
         onEndReached={onEndReachedCallback}
@@ -137,6 +179,10 @@ export function ProductLanding() {
               filters={FILTERS}
               handleClose={closeBottomSheet}
               setFilterOptions={setFilterOptions}
+              selectedFilters={selectedFilters}
+              onSelectedFiltersChange={onSelectedFiltersChange}
+              operation={operation}
+              setSortOptions={setSortOptions}
             />
           </BottomSheetView>
         </BottomSheetScrollView>
@@ -144,20 +190,6 @@ export function ProductLanding() {
     </GestureHandlerRootView>
   );
 }
-
-type RenderItemProps = {
-  item: ListData;
-  onPressHandler: () => void;
-};
-
-const RenderItem = memo(({ item, onPressHandler }: RenderItemProps) => {
-  switch (item.type) {
-    case 'Filter':
-      return <FilterCell onPressHandler={onPressHandler} />;
-    case 'Product':
-      return <ListItem item={item.data} />;
-  }
-});
 
 const styles = StyleSheet.create({
   profileContainer: {

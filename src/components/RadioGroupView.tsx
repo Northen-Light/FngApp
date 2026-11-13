@@ -1,20 +1,25 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+type Item = {
+  id: number;
+  name: string;
+};
+
 type RadioGroupFilterProps = {
   items: Item[];
   selected: number;
   headerText: string;
   onSelect: (index: number) => void;
-  onClose: () => void;
+  handleClose: () => void;
 };
 
-export function RadioGroupFilter({
+export function RadioGroupView({
   items,
   selected,
   headerText,
   onSelect,
-  onClose,
+  handleClose,
 }: RadioGroupFilterProps) {
   return (
     <View>
@@ -23,7 +28,7 @@ export function RadioGroupFilter({
           <Text style={styles.headerText}>{headerText}</Text>
         </View>
         <Pressable
-          onPress={onClose}
+          onPress={handleClose}
           style={({ pressed }) => [
             styles.crossIconContainer,
             { opacity: pressed ? 0.5 : 1.0 },
@@ -55,11 +60,6 @@ export function RadioGroupFilter({
     </View>
   );
 }
-
-type Item = {
-  id: number;
-  name: string;
-};
 
 const styles = StyleSheet.create({
   headerContainer: {

@@ -23,6 +23,23 @@ export const FILTERS: Filter[] = [
   },
 ];
 
+export const SORTING_VALUES = [
+  {
+    id: 100,
+    name: 'Relevance (default)',
+  },
+  {
+    id: 101,
+    name: 'Price (low to high)',
+  },
+  {
+    id: 102,
+    name: 'Price (high to low)',
+  },
+];
+
 export const PAGE_ITEMS = 100;
 
 export const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
+
+export const SORTING_HEADER_TEXT = 'Sort By';

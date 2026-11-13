@@ -33,6 +33,12 @@ export type FilterOptions = {
   filterValueIds: number[];
 };
 
+export type SortOptions = {
+  sortId: number;
+};
+
+export type Operation = 'SORT' | 'FILTER';
+
 type FilterValue = {
   id: number;
   name: string;

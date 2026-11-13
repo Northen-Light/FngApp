@@ -1,33 +1,33 @@
 import { useState } from 'react';
-import type { Filter, FilterOptions } from '../types';
+import type { Filter, FilterOptions, Operation, SortOptions } from '../types';
 import { FilterView } from './FilterView';
+import { RadioGroupView } from './RadioGroupView';
+import { SORTING_HEADER_TEXT, SORTING_VALUES } from '../constants/constants';
 
 type FilterViewProps = {
   filters: Filter[];
   handleClose: () => void;
   setFilterOptions: React.Dispatch<React.SetStateAction<FilterOptions[]>>;
+  selectedFilters: boolean[];
+  onSelectedFiltersChange: (index: number) => void;
+  operation: Operation;
+  setSortOptions: React.Dispatch<React.SetStateAction<SortOptions[]>>;
 };
 
 export function FilterAndSorting({
   filters,
   handleClose,
   setFilterOptions,
+  selectedFilters,
+  onSelectedFiltersChange,
+  operation,
+  setSortOptions,
 }: FilterViewProps) {
-  const [selectedFilters, setSelectedFilters] = useState<boolean[]>(
-    new Array(filters.length).fill(false),
-  );
-
   const [selectedFilterValues, setSelectedFilterValues] = useState<boolean[][]>(
     [...filters.map(filter => new Array(filter.values.length).fill(false))],
   );
 
-  const onSelectedFiltersChange = (index: number) => {
-    setSelectedFilters(current => {
-      const next = [...current];
-      next[index] = !next[index];
-      return next;
-    });
-  };
+  const [selectedSortValue, setSelectedSortValue] = useState<number>(0);
 
   const onSelectedFilterValuesChange = (
     outerIndex: number,
@@ -68,14 +68,32 @@ export function FilterAndSorting({
     });
   };
 
-  return (
-    <FilterView
-      filters={filters}
-      selectedFilters={selectedFilters}
-      selectedFilterValues={selectedFilterValues}
-      onSelectedFiltersChange={onSelectedFiltersChange}
-      onSelectedFilterValuesChange={onSelectedFilterValuesChange}
-      handleClose={handleClose}
-    />
-  );
+  const onSelectedSortValueChange = (index: number) => {
+    setSortOptions([{ sortId: SORTING_VALUES[index].id }]);
+    setSelectedSortValue(index);
+  };
+
+  switch (operation) {
+    case 'FILTER':
+      return (
+        <FilterView
+          filters={filters}
+          selectedFilters={selectedFilters}
+          selectedFilterValues={selectedFilterValues}
+          onSelectedFiltersChange={onSelectedFiltersChange}
+          onSelectedFilterValuesChange={onSelectedFilterValuesChange}
+          handleClose={handleClose}
+        />
+      );
+    case 'SORT':
+      return (
+        <RadioGroupView
+          items={SORTING_VALUES}
+          selected={selectedSortValue}
+          headerText={SORTING_HEADER_TEXT}
+          onSelect={onSelectedSortValueChange}
+          handleClose={handleClose}
+        />
+      );
+  }
 }
