@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import type { FILTER, FILTER_OPTIONS } from '../screens/ProductLanding';
+import type { Filter, FilterOptions } from '../types';
 import { FilterView } from './FilterView';
 
 type FilterViewProps = {
-  filters: FILTER[];
+  filters: Filter[];
   handleClose: () => void;
-  setFilterOptions: React.Dispatch<React.SetStateAction<FILTER_OPTIONS[]>>;
+  setFilterOptions: React.Dispatch<React.SetStateAction<FilterOptions[]>>;
 };
 
 export function FilterAndSorting({

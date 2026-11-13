@@ -1,9 +1,10 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
-import { FILTER } from '../screens/ProductLanding';
+
+import { Filter } from '../types';
 
 type FilterView = {
-  filters: FILTER[];
+  filters: Filter[];
   selectedFilters: boolean[];
   selectedFilterValues: boolean[][];
   onSelectedFiltersChange: (index: number) => void;

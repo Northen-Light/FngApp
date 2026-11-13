@@ -1,4 +1,4 @@
-import { Product } from '../screens/ProductLanding';
+import type { Product } from '../types';
 
 const products: Product[] = require('../mockData/fruits_vegetables_500.json');
 
