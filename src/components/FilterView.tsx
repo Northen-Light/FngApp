@@ -1,39 +1,27 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
+import { FILTER } from '../screens/ProductLanding';
 
-type Param = {
-  id: number;
-  name: string;
-};
-
-export type Filter = {
-  id: number;
-  type: string;
-  params: Param[];
-};
-
-export type FilterSelect = {
-  id: number;
-  selected: boolean[];
-};
-
-type AccordianMultiSelectFilterProps = {
-  filters: Filter[];
-  accordianOpenedList: boolean[];
-  filterSelectedList: FilterSelect[];
-  onAccordianOpenedListChange: (index: number) => void;
-  onFilterSelectedListChange: (outerIndex: number, innerIndex: number) => void;
+type FilterView = {
+  filters: FILTER[];
+  selectedFilters: boolean[];
+  selectedFilterValues: boolean[][];
+  onSelectedFiltersChange: (index: number) => void;
+  onSelectedFilterValuesChange: (
+    outerIndex: number,
+    innerIndex: number,
+  ) => void;
   handleClose: () => void;
 };
 
-export function AccordianMultiSelectFilter({
+export function FilterView({
   filters,
-  accordianOpenedList,
-  filterSelectedList,
-  onAccordianOpenedListChange,
-  onFilterSelectedListChange,
+  selectedFilters,
+  selectedFilterValues,
+  onSelectedFiltersChange,
+  onSelectedFilterValuesChange,
   handleClose,
-}: AccordianMultiSelectFilterProps) {
+}: FilterView) {
   return (
     <View style={styles.parentContainer}>
       <View style={styles.headerContainer}>
@@ -59,46 +47,51 @@ export function AccordianMultiSelectFilter({
           <View key={filter.id}>
             <Pressable
               style={styles.accordianHeaderContainer}
-              onPress={() => onAccordianOpenedListChange(outerIndex)}
+              onPress={() => onSelectedFiltersChange(outerIndex)}
             >
-              <Text style={styles.itemText}>{filter.type.toUpperCase()}</Text>
+              <Text style={styles.filterText}>{filter.name}</Text>
               <FastImage
                 style={styles.arrowIcon}
                 source={
-                  accordianOpenedList[outerIndex]
+                  selectedFilters[outerIndex]
                     ? require('@assets/arrow-up.png')
                     : require('@assets/arrow-down.png')
                 }
               />
             </Pressable>
-            {accordianOpenedList[outerIndex] && (
-              <View style={styles.accordianBodyContainer}>
-                {filter.params.map((param, innerIndex) => (
+
+            {selectedFilters[outerIndex] && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={styles.accordianBodyContainer}
+              >
+                {filter.values.map((value, innerIndex) => (
                   <Pressable
-                    key={param.id}
+                    key={value.id}
                     style={[
                       styles.capsule,
-                      filterSelectedList[outerIndex].selected[innerIndex]
+                      selectedFilterValues[outerIndex][innerIndex]
                         ? styles.bgBlack
                         : {},
                     ]}
                     onPress={() =>
-                      onFilterSelectedListChange(outerIndex, innerIndex)
+                      onSelectedFilterValuesChange(outerIndex, innerIndex)
                     }
                   >
                     <Text
                       style={[
-                        styles.itemText,
-                        filterSelectedList[outerIndex].selected[innerIndex]
+                        styles.filterValueText,
+                        selectedFilterValues[outerIndex][innerIndex]
                           ? styles.textColorWhite
                           : {},
                       ]}
                     >
-                      {param.name}
+                      {value.name}
                     </Text>
                   </Pressable>
                 ))}
-              </View>
+              </ScrollView>
             )}
           </View>
         ))}
@@ -134,8 +127,12 @@ const styles = StyleSheet.create({
   multiSelectContainer: {
     marginTop: 32,
   },
-  itemText: {
+  filterText: {
     fontSize: 16,
+    fontWeight: '400',
+  },
+  filterValueText: {
+    fontSize: 14,
     fontWeight: '400',
   },
   arrowIcon: {
@@ -150,6 +147,7 @@ const styles = StyleSheet.create({
   },
   accordianBodyContainer: {
     flexDirection: 'row',
+    paddingBottom: 16,
   },
   capsule: {
     padding: 8,

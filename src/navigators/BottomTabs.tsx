@@ -6,7 +6,7 @@ import { Cart } from '../screens/Cart';
 import { Profile } from '../screens/Profile';
 import { ProductStack } from './ProductStack';
 import { trigger } from 'react-native-haptic-feedback';
-import { BottomTabsParamList } from './types';
+import { BottomTabsParamList } from '../types';
 
 const Tab = createNativeBottomTabNavigator<BottomTabsParamList>();
 

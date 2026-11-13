@@ -1,4 +1,4 @@
-import type { Product } from '../screens/ProductLanding';
+import { FilterOptions, Product } from '../types';
 
 const data: Product[] = require('../mockData/fruits_vegetables_500.json');
 
@@ -10,26 +10,31 @@ type FetchProductListResponse = {
 export const fetchProductList = (
   pageNumber: number,
   pageItems: number = 50,
-  filterOptions: number[] = [],
+  filterOptions: FilterOptions[] = [],
   controller?: AbortController,
 ): Promise<FetchProductListResponse> => {
   return new Promise((res, rej) => {
     let filteredData = [...data];
 
-    if (filterOptions.includes(2)) {
+    if (filterOptions[0].filterValueIds.includes(12)) {
       filteredData = [...data.filter(d => d.price <= 150)];
-    } else if (filterOptions.includes(3)) {
+    } else if (filterOptions[0].filterValueIds.includes(13)) {
       filteredData = [...data.filter(d => d.price > 150 && d.price <= 275)];
-    } else if (filterOptions.includes(4)) {
+    } else if (filterOptions[0].filterValueIds.includes(14)) {
       filteredData = [...data.filter(d => d.price > 275)];
     }
 
-    if (filterOptions.includes(11) || filterOptions.includes(12)) {
+    if (
+      filterOptions[1].filterValueIds.includes(21) ||
+      filterOptions[1].filterValueIds.includes(22)
+    ) {
       filteredData = [
         ...filteredData.filter(
           d =>
-            (filterOptions.includes(11) && d.type === 'fruit') ||
-            (filterOptions.includes(12) && d.type === 'vegetable'),
+            (filterOptions[1].filterValueIds.includes(21) &&
+              d.type === 'fruit') ||
+            (filterOptions[1].filterValueIds.includes(22) &&
+              d.type === 'vegetable'),
         ),
       ];
     }

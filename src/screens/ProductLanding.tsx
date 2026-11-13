@@ -1,71 +1,35 @@
-import { FlashList } from '@shopify/flash-list';
-import FastImage from 'react-native-fast-image';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
-import { fetchProductList } from '../network/fetchProductList';
+import { StyleSheet, ActivityIndicator } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
-import { RadioGroupFilter } from '../components/RadioGroupFilter';
-import { AccordianMultiSelectFilter } from '../components/AccordianMultiSelectFilter';
-import type {
-  FilterSelect,
-  Filter,
-} from '../components/AccordianMultiSelectFilter';
 
-export type Product = {
-  id: number;
-  name: string;
-  price: number;
-  type: 'fruit' | 'vegetable';
-  imageURL: string;
-};
+import type { FilterOptions, ListData, Product } from '../types';
 
-export type ListItem = { type: 'Product'; data: Product } | { type: 'Filter' };
-
-const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
-const PAGE_ITEMS = 100;
-const PRICE_FILTER_ITEMS = [
-  { id: 1, name: 'All' },
-  { id: 2, name: 'Low : (₹0-150)' },
-  { id: 3, name: 'Medium : (₹150-275)' },
-  { id: 4, name: 'High : (₹275+)' },
-];
-const RADIO_GROUP_FILTER_HEADER_TEXT = 'Select price range';
-
-const FILTERS: Filter[] = [
-  {
-    id: 1,
-    type: 'Product',
-    params: [
-      { id: 11, name: 'fruit' },
-      { id: 12, name: 'vegetable' },
-    ],
-  },
-];
+import { fetchProductList } from '../network/fetchProductList';
+import { FilterAndSorting } from '../components/FilterSorting';
+import { ListItem } from '../components/ListItem';
+import { FilterCell } from '../components/FilterCell';
+import { FILTERS, PAGE_ITEMS } from '../constants/constants';
 
 export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
-  const [listData, setListData] = useState<ListItem[]>([]);
+  const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions[]>(
+    FILTERS.map(filter => ({ filterId: filter.id, filterValueIds: [] })),
+  );
 
   const pageNumber = useRef(0);
   const isInitialLoad = useRef(true);
   const isLoading = useRef(false);
   const hasMore = useRef(true);
 
-  const filterOptionsRef = useRef<number[]>([]);
-
   const loadMore = useCallback(
-    async (filterOptions?: number[], controller?: AbortController) => {
+    async (options?: FilterOptions[], controller?: AbortController) => {
       setLoading(true);
       isLoading.current = true;
 
@@ -73,9 +37,10 @@ export function ProductLanding() {
         const response = await fetchProductList(
           pageNumber.current,
           PAGE_ITEMS,
-          filterOptions,
+          options,
           controller,
         );
+        console.log(response);
         setProductList(data => [...data, ...response.data]);
         hasMore.current = !response.pageEnd;
       } catch (e) {
@@ -97,14 +62,14 @@ export function ProductLanding() {
   const onEndReachedCallback = async () => {
     if (isInitialLoad.current || isLoading.current || !hasMore.current) return;
 
-    loadMore(filterOptionsRef.current);
+    loadMore();
   };
 
   useEffect(() => {
     setListData([
       { type: 'Filter' },
       ...productList.map(
-        (product): ListItem => ({
+        (product): ListData => ({
           type: 'Product',
           data: product,
         }),
@@ -112,188 +77,31 @@ export function ProductLanding() {
     ]);
   }, [productList]);
 
-  const [priceFilterSelected, setPriceFilterSelected] = useState(0);
-  const [accordianOpenedList, setAccordianOpenedList] = useState<boolean[]>(
-    new Array(FILTERS.length).fill(false),
-  );
-  const [filterSelectedList, setFilterSelectedList] = useState(
-    FILTERS.map(
-      (filter): FilterSelect => ({
-        id: filter.id,
-        selected: new Array(filter.params.length).fill(false),
-      }),
-    ),
-  );
-  const [filterType, setFilterType] = useState<
-    'PRICE_FILTER' | 'MULTI_SELECT_FILTER' | null
-  >(null);
-
   const bottomSheetRef = useRef<BottomSheet>(null);
-
-  const closeBottomSheet = () => {
-    setFilterType(null);
-    bottomSheetRef.current?.close();
-  };
-
-  const onAccordianOpenedListChange = useCallback(
-    (index: number) => {
-      const list = [...accordianOpenedList];
-      list[index] = !list[index];
-      setAccordianOpenedList(list);
-    },
-    [accordianOpenedList],
-  );
-
-  const onFilterSelectedListChange = useCallback(
-    (outerIndex: number, innerIndex: number) => {
-      const list = [...filterSelectedList];
-      list[outerIndex].selected[innerIndex] =
-        !list[outerIndex].selected[innerIndex];
-      setFilterSelectedList(list);
-    },
-    [filterSelectedList],
-  );
-
-  const handleBottomSheetChange = (index: number) => {
-    if (index === -1) {
-      setFilterType(null);
-    }
-  };
-
-  useEffect(() => {
-    if (filterType !== null) {
-      bottomSheetRef.current?.expand();
-    }
-  }, [filterType]);
 
   useEffect(() => {
     const controller = new AbortController();
-
-    const filterOptions: number[] = [];
-
-    filterOptions.push(PRICE_FILTER_ITEMS[priceFilterSelected].id);
-
-    FILTERS.forEach((filter, outerIndex) => {
-      filter.params.forEach((param, innerIndex) => {
-        if (filterSelectedList[outerIndex].selected[innerIndex]) {
-          filterOptions.push(param.id);
-        }
-      });
-    });
 
     pageNumber.current = 0;
     isInitialLoad.current = false;
     isLoading.current = false;
     hasMore.current = true;
-    filterOptionsRef.current = filterOptions;
-    setProductList([]);
 
-    loadMore(filterOptionsRef.current, controller);
+    setProductList([]);
+    loadMore(filterOptions, controller);
 
     return () => controller.abort();
-  }, [priceFilterSelected, filterSelectedList, loadMore]);
+  }, [filterOptions, loadMore]);
 
-  const FilterCell = useCallback(() => {
-    return (
-      <View style={styles.filterCellContainer}>
-        <Pressable
-          style={styles.boxContainer}
-          onPress={() => setFilterType('MULTI_SELECT_FILTER')}
-        >
-          <FastImage
-            style={styles.filterIcon}
-            source={require('@assets/filter.png')}
-          />
-          <Text style={styles.font16}>Filter</Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.boxContainer}
-          onPress={() => setFilterType('PRICE_FILTER')}
-        >
-          <Text style={styles.font16}>Price</Text>
-          <FastImage
-            style={styles.downArrow}
-            source={require('@assets/arrow-down.png')}
-          />
-        </Pressable>
-
-        {FILTERS.map(filter => (
-          <Pressable
-            key={filter.id}
-            style={styles.boxContainer}
-            onPress={() => {
-              const list = [...accordianOpenedList];
-              list[0] = true;
-              setAccordianOpenedList(list);
-              setFilterType('MULTI_SELECT_FILTER');
-            }}
-          >
-            <Text style={styles.font16}>{filter.type}</Text>
-            <FastImage
-              style={styles.downArrow}
-              source={require('@assets/arrow-down.png')}
-            />
-          </Pressable>
-        ))}
-      </View>
-    );
-  }, [accordianOpenedList]);
-
-  const renderItem = useCallback(
-    ({ item }: { item: ListItem }) => {
-      switch (item.type) {
-        case 'Filter':
-          return <FilterCell />;
-        case 'Product':
-          return <ListItem item={item.data} />;
-      }
-    },
-    [FilterCell],
+  const expandBottomSheet = useCallback(
+    () => bottomSheetRef.current?.expand(),
+    [],
   );
 
-  const RenderFilterView = useCallback(() => {
-    switch (filterType) {
-      case 'PRICE_FILTER': {
-        return (
-          <RadioGroupFilter
-            items={PRICE_FILTER_ITEMS}
-            selected={priceFilterSelected}
-            headerText={RADIO_GROUP_FILTER_HEADER_TEXT}
-            onSelect={index => {
-              setPriceFilterSelected(index);
-              closeBottomSheet();
-            }}
-            onClose={closeBottomSheet}
-          />
-        );
-      }
-
-      case 'MULTI_SELECT_FILTER': {
-        return (
-          <AccordianMultiSelectFilter
-            filters={FILTERS}
-            filterSelectedList={filterSelectedList}
-            accordianOpenedList={accordianOpenedList}
-            onAccordianOpenedListChange={onAccordianOpenedListChange}
-            onFilterSelectedListChange={onFilterSelectedListChange}
-            handleClose={closeBottomSheet}
-          />
-        );
-      }
-
-      case null: {
-        return null;
-      }
-    }
-  }, [
-    accordianOpenedList,
-    filterSelectedList,
-    filterType,
-    onAccordianOpenedListChange,
-    onFilterSelectedListChange,
-    priceFilterSelected,
-  ]);
+  const closeBottomSheet = useCallback(
+    () => bottomSheetRef.current?.close(),
+    [],
+  );
 
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
@@ -306,7 +114,9 @@ export function ProductLanding() {
             layout.span = 2;
           }
         }}
-        renderItem={renderItem}
+        renderItem={({ item }) => (
+          <RenderItem item={item} onPressHandler={expandBottomSheet} />
+        )}
         style={styles.flashList}
         onEndReachedThreshold={0.2}
         onEndReached={onEndReachedCallback}
@@ -316,7 +126,6 @@ export function ProductLanding() {
       />
 
       <BottomSheet
-        onChange={handleBottomSheetChange}
         ref={bottomSheetRef}
         enableDynamicSizing
         enablePanDownToClose
@@ -324,7 +133,11 @@ export function ProductLanding() {
       >
         <BottomSheetScrollView>
           <BottomSheetView style={styles.bottomSheetView}>
-            {RenderFilterView()}
+            <FilterAndSorting
+              filters={FILTERS}
+              handleClose={closeBottomSheet}
+              setFilterOptions={setFilterOptions}
+            />
           </BottomSheetView>
         </BottomSheetScrollView>
       </BottomSheet>
@@ -332,28 +145,18 @@ export function ProductLanding() {
   );
 }
 
-const ListItem = memo(({ item }: { item: Product }) => {
-  return (
-    <View style={styles.m16}>
-      <FastImage
-        recyclingKey={item.id.toString()}
-        transition
-        objectFit="cover"
-        style={styles.image}
-        source={{
-          uri: item.imageURL,
-          headers: { 'User-Agent': UA },
-        }}
-        onError={({ nativeEvent }) => {
-          console.log(item.name, nativeEvent.error);
-        }}
-      />
-      <View style={styles.mt8}>
-        <Text style={styles.productNameText}>{item.name}</Text>
-        <Text style={styles.productPriceText}>₹{item.price}</Text>
-      </View>
-    </View>
-  );
+type RenderItemProps = {
+  item: ListData;
+  onPressHandler: () => void;
+};
+
+const RenderItem = memo(({ item, onPressHandler }: RenderItemProps) => {
+  switch (item.type) {
+    case 'Filter':
+      return <FilterCell onPressHandler={onPressHandler} />;
+    case 'Product':
+      return <ListItem item={item.data} />;
+  }
 });
 
 const styles = StyleSheet.create({
@@ -366,49 +169,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
   },
-  image: {
-    height: 200,
-    flex: 1,
-    borderRadius: 16,
-    borderColor: 'grey',
-    borderWidth: 1,
-  },
-  productNameText: {
-    fontWeight: 'black',
-    fontSize: 16,
-  },
-  productPriceText: {
-    fontWeight: 'bold',
-  },
-  m16: {
-    margin: 16,
-  },
-  mt8: {
-    marginTop: 8,
-  },
   bottomSheetView: {
     paddingVertical: 32,
-  },
-  filterCellContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    backgroundColor: 'white',
-  },
-  boxContainer: {
-    flexDirection: 'row',
-    marginRight: 16,
-    alignItems: 'center',
-  },
-  filterIcon: {
-    width: 16,
-    height: 16,
-    marginRight: 8,
-  },
-  font16: {
-    fontSize: 16,
-  },
-  downArrow: {
-    width: 24,
-    height: 24,
   },
 });
