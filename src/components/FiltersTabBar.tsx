@@ -3,19 +3,12 @@ import FastImage from 'react-native-fast-image';
 
 import type { Filter, Operation } from '../types';
 
-type FilterCellProps = {
+type FiltersTabBar = {
   filters: Filter[];
-  onPressHandler: () => void;
-  onSelectedFiltersSetTrue: (index: number) => void;
-  setOperation: React.Dispatch<React.SetStateAction<Operation>>;
+  onTabPress: (type: Operation, index?: number) => void;
 };
 
-export const FilterCell = ({
-  filters,
-  onPressHandler,
-  onSelectedFiltersSetTrue,
-  setOperation,
-}: FilterCellProps) => {
+export const FiltersTabBar = ({ filters, onTabPress }: FiltersTabBar) => {
   return (
     <ScrollView
       horizontal
@@ -24,10 +17,7 @@ export const FilterCell = ({
     >
       <Pressable
         style={styles.boxContainer}
-        onPress={() => {
-          setOperation('FILTER');
-          onPressHandler();
-        }}
+        onPress={() => onTabPress('FILTER')}
       >
         <FastImage
           style={styles.filterIcon}
@@ -35,28 +25,20 @@ export const FilterCell = ({
         />
         <Text style={styles.font16}>Filter</Text>
       </Pressable>
-      <Pressable
-        style={styles.boxContainer}
-        onPress={() => {
-          setOperation('SORT');
-          onPressHandler();
-        }}
-      >
+
+      <Pressable style={styles.boxContainer} onPress={() => onTabPress('SORT')}>
         <Text style={styles.font16}>Sort</Text>
         <FastImage
           style={styles.arrowDownIcon}
           source={require('@assets/arrow-down.png')}
         />
       </Pressable>
+
       {filters.map((filter, index) => (
         <Pressable
           key={filter.id}
           style={styles.boxContainer}
-          onPress={() => {
-            setOperation('FILTER');
-            onSelectedFiltersSetTrue(index);
-            onPressHandler();
-          }}
+          onPress={() => onTabPress('FILTER', index)}
         >
           <Text style={styles.font16}>{filter.name}</Text>
           <FastImage

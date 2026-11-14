@@ -8,8 +8,8 @@ type FilterViewProps = {
   filters: Filter[];
   handleClose: () => void;
   setFilterOptions: React.Dispatch<React.SetStateAction<FilterOptions[]>>;
-  selectedFilters: boolean[];
-  onSelectedFiltersChange: (index: number) => void;
+  accordianExpanded: boolean[];
+  onAccordianExpandedChange: (index: number) => void;
   operation: Operation;
   setSortOptions: React.Dispatch<React.SetStateAction<SortOptions[]>>;
 };
@@ -18,8 +18,8 @@ export function FilterAndSorting({
   filters,
   handleClose,
   setFilterOptions,
-  selectedFilters,
-  onSelectedFiltersChange,
+  accordianExpanded,
+  onAccordianExpandedChange,
   operation,
   setSortOptions,
 }: FilterViewProps) {
@@ -78,9 +78,9 @@ export function FilterAndSorting({
       return (
         <FilterView
           filters={filters}
-          selectedFilters={selectedFilters}
+          accordianExpanded={accordianExpanded}
+          onAccordianExpandedChange={onAccordianExpandedChange}
           selectedFilterValues={selectedFilterValues}
-          onSelectedFiltersChange={onSelectedFiltersChange}
           onSelectedFilterValuesChange={onSelectedFilterValuesChange}
           handleClose={handleClose}
         />
@@ -90,8 +90,8 @@ export function FilterAndSorting({
         <RadioGroupView
           items={SORTING_VALUES}
           selected={selectedSortValue}
-          headerText={SORTING_HEADER_TEXT}
           onSelect={onSelectedSortValueChange}
+          headerText={SORTING_HEADER_TEXT}
           handleClose={handleClose}
         />
       );

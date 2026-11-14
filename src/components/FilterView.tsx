@@ -5,9 +5,9 @@ import { Filter } from '../types';
 
 type FilterView = {
   filters: Filter[];
-  selectedFilters: boolean[];
+  accordianExpanded: boolean[];
   selectedFilterValues: boolean[][];
-  onSelectedFiltersChange: (index: number) => void;
+  onAccordianExpandedChange: (index: number) => void;
   onSelectedFilterValuesChange: (
     outerIndex: number,
     innerIndex: number,
@@ -17,9 +17,9 @@ type FilterView = {
 
 export function FilterView({
   filters,
-  selectedFilters,
+  accordianExpanded,
   selectedFilterValues,
-  onSelectedFiltersChange,
+  onAccordianExpandedChange,
   onSelectedFilterValuesChange,
   handleClose,
 }: FilterView) {
@@ -48,20 +48,20 @@ export function FilterView({
           <View key={filter.id}>
             <Pressable
               style={styles.accordianHeaderContainer}
-              onPress={() => onSelectedFiltersChange(outerIndex)}
+              onPress={() => onAccordianExpandedChange(outerIndex)}
             >
               <Text style={styles.filterText}>{filter.name}</Text>
               <FastImage
                 style={styles.arrowIcon}
                 source={
-                  selectedFilters[outerIndex]
+                  accordianExpanded[outerIndex]
                     ? require('@assets/arrow-up.png')
                     : require('@assets/arrow-down.png')
                 }
               />
             </Pressable>
 
-            {selectedFilters[outerIndex] && (
+            {accordianExpanded[outerIndex] && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}

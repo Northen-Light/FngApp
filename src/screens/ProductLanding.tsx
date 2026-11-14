@@ -18,16 +18,17 @@ import type {
 import { fetchProductList } from '../network/fetchProductList';
 import { FilterAndSorting } from '../components/FilterSorting';
 import { ListItem } from '../components/ListItem';
-import { FilterCell } from '../components/FilterCell';
+import { FiltersTabBar } from '../components/FiltersTabBar';
 import { FILTERS, PAGE_ITEMS } from '../constants/constants';
 
 export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
   const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState<boolean[]>(
+  const [accordianExpanded, setAccordianExpanded] = useState<boolean[]>(
     new Array(FILTERS.length).fill(false),
   );
+
   const [filterOptions, setFilterOptions] = useState<FilterOptions[]>(
     FILTERS.map(filter => ({ filterId: filter.id, filterValueIds: [] })),
   );
@@ -91,20 +92,33 @@ export function ProductLanding() {
     [],
   );
 
-  const onSelectedFiltersChange = (index: number) => {
-    setSelectedFilters(current => {
+  const onAccordianExpandedChange = useCallback((index: number) => {
+    setAccordianExpanded(current => {
       const next = [...current];
       next[index] = !next[index];
       return next;
     });
-  };
+  }, []);
 
-  const onSelectedFiltersSetTrue = (index: number) => {
-    setSelectedFilters(current => {
+  const onAccordianExpandedChangeSetTrue = useCallback((index: number) => {
+    setAccordianExpanded(current => {
       const next = [...current];
       next[index] = true;
       return next;
     });
+  }, []);
+
+  const onFilterTabPress = (operationArg: Operation, index?: number) => {
+    switch (operation) {
+      case 'SORT':
+        setOperation(operationArg);
+        break;
+      case 'FILTER':
+        setOperation(operationArg);
+        if (index !== undefined) onAccordianExpandedChangeSetTrue(index);
+        break;
+    }
+    expandBottomSheet();
   };
 
   useEffect(() => {
@@ -148,11 +162,9 @@ export function ProductLanding() {
           switch (item.type) {
             case 'Filter':
               return (
-                <FilterCell
+                <FiltersTabBar
                   filters={FILTERS}
-                  onPressHandler={expandBottomSheet}
-                  onSelectedFiltersSetTrue={onSelectedFiltersSetTrue}
-                  setOperation={setOperation}
+                  onTabPress={onFilterTabPress}
                 />
               );
             case 'Product':
@@ -177,12 +189,12 @@ export function ProductLanding() {
           <BottomSheetView style={styles.bottomSheetView}>
             <FilterAndSorting
               filters={FILTERS}
-              handleClose={closeBottomSheet}
+              accordianExpanded={accordianExpanded}
+              onAccordianExpandedChange={onAccordianExpandedChange}
               setFilterOptions={setFilterOptions}
-              selectedFilters={selectedFilters}
-              onSelectedFiltersChange={onSelectedFiltersChange}
-              operation={operation}
               setSortOptions={setSortOptions}
+              operation={operation}
+              handleClose={closeBottomSheet}
             />
           </BottomSheetView>
         </BottomSheetScrollView>
