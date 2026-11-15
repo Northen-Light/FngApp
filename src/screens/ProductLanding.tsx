@@ -32,8 +32,12 @@ export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
   const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedSortValue, setSelectedSortValue] = useState<number>(0);
   const [accordianExpanded, setAccordianExpanded] = useState<boolean[]>(
     new Array(FILTERS.length).fill(false),
+  );
+  const [selectedFilterValues, setSelectedFilterValues] = useState<boolean[][]>(
+    [...FILTERS.map(filter => new Array(filter.values.length).fill(false))],
   );
 
   const [filterOptions, setFilterOptions] = useState<FilterOptions[]>(
@@ -41,12 +45,6 @@ export function ProductLanding() {
   );
   const [sortOptions, setSortOptions] = useState<SortOptions[]>([]);
   const [operation, setOperation] = useState<Operation>('FILTER');
-
-  const [selectedFilterValues, setSelectedFilterValues] = useState<boolean[][]>(
-    [...FILTERS.map(filter => new Array(filter.values.length).fill(false))],
-  );
-
-  const [selectedSortValue, setSelectedSortValue] = useState<number>(0);
 
   const pageNumber = useRef(0);
   const isInitialLoad = useRef(true);
