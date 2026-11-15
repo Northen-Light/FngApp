@@ -179,6 +179,7 @@ export function ProductLanding() {
   const onSelectedSortValueChange = useCallback((index: number) => {
     setSortOptions([{ sortId: SORTING_VALUES[index].id }]);
     setSelectedSortValue(index);
+    bottomSheetRef.current?.close();
   }, []);
 
   const FilterSorting = useCallback(() => {
