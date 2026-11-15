@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, ActivityIndicator } from 'react-native';
+import { StyleSheet, ActivityIndicator, BackHandler } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, {
+  BottomSheetBackdrop,
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
@@ -45,6 +46,7 @@ export function ProductLanding() {
   );
   const [sortOptions, setSortOptions] = useState<SortOptions[]>([]);
   const [operation, setOperation] = useState<Operation>('FILTER');
+  const sheetIndexRef = useRef(-1);
 
   const pageNumber = useRef(0);
   const isInitialLoad = useRef(true);
@@ -179,32 +181,6 @@ export function ProductLanding() {
     setSelectedSortValue(index);
   }, []);
 
-  useEffect(() => {
-    setListData([
-      { type: 'Filter' },
-      ...productList.map(
-        (product): ListData => ({
-          type: 'Product',
-          data: product,
-        }),
-      ),
-    ]);
-  }, [productList]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    pageNumber.current = 0;
-    isInitialLoad.current = false;
-    isLoading.current = false;
-    hasMore.current = true;
-
-    setProductList([]);
-    loadMore({ filterOptions, sortOptions }, controller);
-
-    return () => controller.abort();
-  }, [filterOptions, sortOptions, loadMore]);
-
   const FilterSorting = useCallback(() => {
     switch (operation) {
       case 'FILTER':
@@ -240,6 +216,61 @@ export function ProductLanding() {
     selectedSortValue,
     onSelectedSortValueChange,
   ]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+      />
+    ),
+    [],
+  );
+
+  useEffect(() => {
+    setListData([
+      { type: 'Filter' },
+      ...productList.map(
+        (product): ListData => ({
+          type: 'Product',
+          data: product,
+        }),
+      ),
+    ]);
+  }, [productList]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    pageNumber.current = 0;
+    isInitialLoad.current = false;
+    isLoading.current = false;
+    hasMore.current = true;
+
+    setProductList([]);
+    loadMore({ filterOptions, sortOptions }, controller);
+
+    return () => controller.abort();
+  }, [filterOptions, sortOptions, loadMore]);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (sheetIndexRef.current >= 0) {
+        bottomSheetRef.current?.close();
+        return true;
+      }
+      return false;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
+
+    return () => subscription.remove();
+  }, []);
 
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
@@ -278,6 +309,8 @@ export function ProductLanding() {
         enableDynamicSizing
         enablePanDownToClose
         index={-1}
+        backdropComponent={renderBackdrop}
+        onChange={index => (sheetIndexRef.current = index)}
       >
         <BottomSheetScrollView>
           <BottomSheetView style={styles.bottomSheetView}>
