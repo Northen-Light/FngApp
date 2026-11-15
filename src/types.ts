@@ -21,11 +21,11 @@ export type Product = {
 
 export type ListData = { type: 'Product'; data: Product } | { type: 'Filter' };
 
-export type Filter = {
+export type MultiSelect = {
   id: number;
   name: string;
   type: 'SINGLE_SELECT' | 'MULTI_SELECT';
-  values: FilterValue[];
+  values: MultiSelectValue[];
 };
 
 export type FilterOptions = {
@@ -39,7 +39,7 @@ export type SortOptions = {
 
 export type Operation = 'SORT' | 'FILTER';
 
-type FilterValue = {
+type MultiSelectValue = {
   id: number;
   name: string;
 };

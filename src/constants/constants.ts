@@ -1,6 +1,6 @@
-import { Filter } from '../types';
+import { MultiSelect } from '../types';
 
-export const FILTERS: Filter[] = [
+export const FILTERS: MultiSelect[] = [
   {
     id: 1,
     name: 'Price',
@@ -43,3 +43,5 @@ export const PAGE_ITEMS = 100;
 export const UA = 'FngApp/1.0 (contact: prateekpatnaik823@gmail.com)';
 
 export const SORTING_HEADER_TEXT = 'Sort By';
+
+export const FILTER_HEADER_TEXT = 'Filter';

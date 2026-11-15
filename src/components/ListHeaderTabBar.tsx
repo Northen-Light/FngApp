@@ -1,19 +1,19 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import type { Filter, Operation } from '../types';
+import type { MultiSelect, Operation } from '../types';
 
-type FiltersTabBar = {
-  filters: Filter[];
+type ListHeaderTabBar = {
+  items: MultiSelect[];
   onTabPress: (type: Operation, index?: number) => void;
 };
 
-export const FiltersTabBar = ({ filters, onTabPress }: FiltersTabBar) => {
+export const ListHeaderTabBar = ({ items, onTabPress }: ListHeaderTabBar) => {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      style={styles.filterCellContainer}
+      style={styles.parentContainer}
     >
       <Pressable
         style={styles.boxContainer}
@@ -24,9 +24,17 @@ export const FiltersTabBar = ({ filters, onTabPress }: FiltersTabBar) => {
           source={require('@assets/filter.png')}
         />
         <Text style={styles.font16}>Filter</Text>
+        <FastImage
+          style={styles.arrowDownIcon}
+          source={require('@assets/arrow-down.png')}
+        />
       </Pressable>
 
       <Pressable style={styles.boxContainer} onPress={() => onTabPress('SORT')}>
+        <FastImage
+          style={styles.filterIcon}
+          source={require('@assets/sort.png')}
+        />
         <Text style={styles.font16}>Sort</Text>
         <FastImage
           style={styles.arrowDownIcon}
@@ -34,13 +42,13 @@ export const FiltersTabBar = ({ filters, onTabPress }: FiltersTabBar) => {
         />
       </Pressable>
 
-      {filters.map((filter, index) => (
+      {items.map((item, index) => (
         <Pressable
-          key={filter.id}
+          key={item.id}
           style={styles.boxContainer}
           onPress={() => onTabPress('FILTER', index)}
         >
-          <Text style={styles.font16}>{filter.name}</Text>
+          <Text style={styles.font16}>{item.name}</Text>
           <FastImage
             style={styles.arrowDownIcon}
             source={require('@assets/arrow-down.png')}
@@ -52,7 +60,7 @@ export const FiltersTabBar = ({ filters, onTabPress }: FiltersTabBar) => {
 };
 
 const styles = StyleSheet.create({
-  filterCellContainer: {
+  parentContainer: {
     flexDirection: 'row',
     padding: 16,
     backgroundColor: 'white',

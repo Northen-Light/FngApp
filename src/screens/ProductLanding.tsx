@@ -16,10 +16,17 @@ import type {
 } from '../types';
 
 import { fetchProductList } from '../network/fetchProductList';
-import { FilterAndSorting } from '../components/FilterSorting';
 import { ListItem } from '../components/ListItem';
-import { FiltersTabBar } from '../components/FiltersTabBar';
-import { FILTERS, PAGE_ITEMS } from '../constants/constants';
+import { ListHeaderTabBar } from '../components/ListHeaderTabBar';
+import {
+  FILTER_HEADER_TEXT,
+  FILTERS,
+  PAGE_ITEMS,
+  SORTING_HEADER_TEXT,
+  SORTING_VALUES,
+} from '../constants/constants';
+import { AccordianMultiSelectView } from '../components/AccordianMultiSelectView';
+import { RadioGroupView } from '../components/RadioGroupView';
 
 export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
@@ -34,6 +41,12 @@ export function ProductLanding() {
   );
   const [sortOptions, setSortOptions] = useState<SortOptions[]>([]);
   const [operation, setOperation] = useState<Operation>('FILTER');
+
+  const [selectedFilterValues, setSelectedFilterValues] = useState<boolean[][]>(
+    [...FILTERS.map(filter => new Array(filter.values.length).fill(false))],
+  );
+
+  const [selectedSortValue, setSelectedSortValue] = useState<number>(0);
 
   const pageNumber = useRef(0);
   const isInitialLoad = useRef(true);
@@ -76,11 +89,11 @@ export function ProductLanding() {
     [],
   );
 
-  const onEndReachedCallback = async () => {
+  const onEndReachedCallback = useCallback(async () => {
     if (isInitialLoad.current || isLoading.current || !hasMore.current) return;
 
     loadMore({ filterOptions, sortOptions });
-  };
+  }, [filterOptions, loadMore, sortOptions]);
 
   const expandBottomSheet = useCallback(
     () => bottomSheetRef.current?.expand(),
@@ -92,7 +105,7 @@ export function ProductLanding() {
     [],
   );
 
-  const onAccordianExpandedChange = useCallback((index: number) => {
+  const onSelectedAccordiansChange = useCallback((index: number) => {
     setAccordianExpanded(current => {
       const next = [...current];
       next[index] = !next[index];
@@ -108,18 +121,65 @@ export function ProductLanding() {
     });
   }, []);
 
-  const onFilterTabPress = (operationArg: Operation, index?: number) => {
-    switch (operation) {
-      case 'SORT':
-        setOperation(operationArg);
-        break;
-      case 'FILTER':
-        setOperation(operationArg);
-        if (index !== undefined) onAccordianExpandedChangeSetTrue(index);
-        break;
-    }
-    expandBottomSheet();
-  };
+  const onFilterTabPress = useCallback(
+    (operationArg: Operation, index?: number) => {
+      switch (operationArg) {
+        case 'SORT':
+          setOperation(operationArg);
+          break;
+        case 'FILTER':
+          setOperation(operationArg);
+          if (index !== undefined) onAccordianExpandedChangeSetTrue(index);
+          break;
+      }
+      expandBottomSheet();
+    },
+    [expandBottomSheet, onAccordianExpandedChangeSetTrue],
+  );
+
+  const onSelectedFilterValuesChange = useCallback(
+    (outerIndex: number, innerIndex: number) => {
+      setFilterOptions(current => {
+        const next = [...current];
+        if (!selectedFilterValues[outerIndex][innerIndex]) {
+          if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
+            next[outerIndex].filterValueIds.pop();
+          }
+
+          next[outerIndex].filterValueIds.push(
+            FILTERS[outerIndex].values[innerIndex].id,
+          );
+        } else {
+          const removeIndex = next[outerIndex].filterValueIds.indexOf(
+            FILTERS[outerIndex].values[innerIndex].id,
+          );
+          next[outerIndex].filterValueIds.splice(removeIndex, 1);
+        }
+        return next;
+      });
+
+      setSelectedFilterValues(current => {
+        const next = [...current];
+
+        if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
+          for (let i = 0; i < next[outerIndex].length; i++) {
+            if (i !== innerIndex && next[outerIndex][i]) {
+              next[outerIndex][i] = false;
+            }
+          }
+        }
+
+        next[outerIndex][innerIndex] = !next[outerIndex][innerIndex];
+        return next;
+      });
+    },
+    [selectedFilterValues],
+  );
+
+  const onSelectedSortValueChange = useCallback((index: number) => {
+    setSortOptions([{ sortId: SORTING_VALUES[index].id }]);
+    setSelectedSortValue(index);
+  }, []);
 
   useEffect(() => {
     setListData([
@@ -147,6 +207,42 @@ export function ProductLanding() {
     return () => controller.abort();
   }, [filterOptions, sortOptions, loadMore]);
 
+  const FilterSorting = useCallback(() => {
+    switch (operation) {
+      case 'FILTER':
+        return (
+          <AccordianMultiSelectView
+            items={FILTERS}
+            selectedAccordians={accordianExpanded}
+            onSelectedAccordiansChange={onSelectedAccordiansChange}
+            selectedValues={selectedFilterValues}
+            onSelectedValuesChange={onSelectedFilterValuesChange}
+            headerText={FILTER_HEADER_TEXT}
+            handleClose={closeBottomSheet}
+          />
+        );
+      case 'SORT':
+        return (
+          <RadioGroupView
+            items={SORTING_VALUES}
+            selectedValue={selectedSortValue}
+            onSelectedValueChange={onSelectedSortValueChange}
+            headerText={SORTING_HEADER_TEXT}
+            handleClose={closeBottomSheet}
+          />
+        );
+    }
+  }, [
+    operation,
+    accordianExpanded,
+    onSelectedAccordiansChange,
+    selectedFilterValues,
+    onSelectedFilterValuesChange,
+    closeBottomSheet,
+    selectedSortValue,
+    onSelectedSortValueChange,
+  ]);
+
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
       <FlashList
@@ -162,8 +258,8 @@ export function ProductLanding() {
           switch (item.type) {
             case 'Filter':
               return (
-                <FiltersTabBar
-                  filters={FILTERS}
+                <ListHeaderTabBar
+                  items={FILTERS}
                   onTabPress={onFilterTabPress}
                 />
               );
@@ -187,15 +283,7 @@ export function ProductLanding() {
       >
         <BottomSheetScrollView>
           <BottomSheetView style={styles.bottomSheetView}>
-            <FilterAndSorting
-              filters={FILTERS}
-              accordianExpanded={accordianExpanded}
-              onAccordianExpandedChange={onAccordianExpandedChange}
-              setFilterOptions={setFilterOptions}
-              setSortOptions={setSortOptions}
-              operation={operation}
-              handleClose={closeBottomSheet}
-            />
+            <FilterSorting />
           </BottomSheetView>
         </BottomSheetScrollView>
       </BottomSheet>

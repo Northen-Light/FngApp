@@ -8,17 +8,17 @@ type Item = {
 
 type RadioGroupFilterProps = {
   items: Item[];
-  selected: number;
+  selectedValue: number;
+  onSelectedValueChange: (index: number) => void;
   headerText: string;
-  onSelect: (index: number) => void;
   handleClose: () => void;
 };
 
 export function RadioGroupView({
   items,
-  selected,
+  selectedValue,
+  onSelectedValueChange,
   headerText,
-  onSelect,
   handleClose,
 }: RadioGroupFilterProps) {
   return (
@@ -47,10 +47,10 @@ export function RadioGroupView({
             hitSlop={{ left: 16 }}
             key={item.id}
             style={styles.radioGroupItem}
-            onPress={() => onSelect(index)}
+            onPress={() => onSelectedValueChange(index)}
           >
             <View style={styles.buttonOuter}>
-              {selected === index && <View style={styles.buttonInner} />}
+              {selectedValue === index && <View style={styles.buttonInner} />}
             </View>
 
             <Text style={styles.itemText}>{item.name}</Text>

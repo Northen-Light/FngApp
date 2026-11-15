@@ -1,33 +1,42 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import { Filter } from '../types';
+type Item = {
+  id: number;
+  name: string;
+  type: 'SINGLE_SELECT' | 'MULTI_SELECT';
+  values: Value[];
+};
 
-type FilterView = {
-  filters: Filter[];
-  accordianExpanded: boolean[];
-  selectedFilterValues: boolean[][];
-  onAccordianExpandedChange: (index: number) => void;
-  onSelectedFilterValuesChange: (
-    outerIndex: number,
-    innerIndex: number,
-  ) => void;
+type Value = {
+  id: number;
+  name: string;
+};
+
+type AccordianMultiSelectViewProps = {
+  items: Item[];
+  selectedAccordians: boolean[];
+  onSelectedAccordiansChange: (index: number) => void;
+  selectedValues: boolean[][];
+  onSelectedValuesChange: (outerIndex: number, innerIndex: number) => void;
+  headerText: string;
   handleClose: () => void;
 };
 
-export function FilterView({
-  filters,
-  accordianExpanded,
-  selectedFilterValues,
-  onAccordianExpandedChange,
-  onSelectedFilterValuesChange,
+export function AccordianMultiSelectView({
+  items,
+  selectedAccordians,
+  onSelectedAccordiansChange,
+  selectedValues,
+  onSelectedValuesChange,
+  headerText,
   handleClose,
-}: FilterView) {
+}: AccordianMultiSelectViewProps) {
   return (
     <View style={styles.parentContainer}>
       <View style={styles.headerContainer}>
         <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>FILTER</Text>
+          <Text style={styles.headerText}>{headerText}</Text>
         </View>
         <Pressable
           onPress={handleClose}
@@ -44,46 +53,46 @@ export function FilterView({
       </View>
 
       <View style={styles.multiSelectContainer}>
-        {filters.map((filter, outerIndex) => (
-          <View key={filter.id}>
+        {items.map((item, outerIndex) => (
+          <View key={item.id}>
             <Pressable
               style={styles.accordianHeaderContainer}
-              onPress={() => onAccordianExpandedChange(outerIndex)}
+              onPress={() => onSelectedAccordiansChange(outerIndex)}
             >
-              <Text style={styles.filterText}>{filter.name}</Text>
+              <Text style={styles.itemText}>{item.name}</Text>
               <FastImage
                 style={styles.arrowIcon}
                 source={
-                  accordianExpanded[outerIndex]
+                  selectedAccordians[outerIndex]
                     ? require('@assets/arrow-up.png')
                     : require('@assets/arrow-down.png')
                 }
               />
             </Pressable>
 
-            {accordianExpanded[outerIndex] && (
+            {selectedAccordians[outerIndex] && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.accordianBodyContainer}
               >
-                {filter.values.map((value, innerIndex) => (
+                {item.values.map((value, innerIndex) => (
                   <Pressable
                     key={value.id}
                     style={[
                       styles.capsule,
-                      selectedFilterValues[outerIndex][innerIndex]
+                      selectedValues[outerIndex][innerIndex]
                         ? styles.bgBlack
                         : {},
                     ]}
                     onPress={() =>
-                      onSelectedFilterValuesChange(outerIndex, innerIndex)
+                      onSelectedValuesChange(outerIndex, innerIndex)
                     }
                   >
                     <Text
                       style={[
-                        styles.filterValueText,
-                        selectedFilterValues[outerIndex][innerIndex]
+                        styles.itemValueText,
+                        selectedValues[outerIndex][innerIndex]
                           ? styles.textColorWhite
                           : {},
                       ]}
@@ -128,11 +137,11 @@ const styles = StyleSheet.create({
   multiSelectContainer: {
     marginTop: 32,
   },
-  filterText: {
+  itemText: {
     fontSize: 16,
     fontWeight: '400',
   },
-  filterValueText: {
+  itemValueText: {
     fontSize: 14,
     fontWeight: '400',
   },
