@@ -29,9 +29,9 @@ import {
 import { AccordianMultiSelectView } from '../components/AccordianMultiSelectView';
 import { RadioGroupView } from '../components/RadioGroupView';
 import { useCart } from '../contextProviders/CartProvider';
+import { useProductData } from '../contextProviders/ProductDataProvider';
 
 export function ProductLanding() {
-  const [productList, setProductList] = useState<Product[]>([]);
   const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSortValue, setSelectedSortValue] = useState<number>(0);
@@ -56,6 +56,7 @@ export function ProductLanding() {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const { cartState, dispatch } = useCart();
+  const { productData, setProductData } = useProductData();
 
   const loadMore = useCallback(
     async (
@@ -74,7 +75,15 @@ export function ProductLanding() {
           controller,
         );
         console.log(response);
-        setProductList(data => [...data, ...response.data]);
+
+        setProductData(current => {
+          const next = new Map<number, Product>(current);
+          for (let i = 0; i < response.data.length; i++) {
+            next.set(response.data[i].id, response.data[i]);
+          }
+          return next;
+        });
+
         hasMore.current = !response.pageEnd;
       } catch (e) {
         if (e instanceof Error) {
@@ -89,7 +98,7 @@ export function ProductLanding() {
         setLoading(false);
       }
     },
-    [],
+    [setProductData],
   );
 
   const onEndReachedCallback = useCallback(async () => {
@@ -234,16 +243,19 @@ export function ProductLanding() {
   );
 
   useEffect(() => {
-    setListData([
-      { type: 'Filter' },
-      ...productList.map(
-        (product): ListData => ({
+    setListData(() => {
+      const next: ListData[] = [{ type: 'Filter' }];
+
+      productData.forEach(value => {
+        next.push({
           type: 'Product',
-          data: product,
-        }),
-      ),
-    ]);
-  }, [productList]);
+          data: value,
+        });
+      });
+
+      return next;
+    });
+  }, [productData]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -253,11 +265,11 @@ export function ProductLanding() {
     isLoading.current = false;
     hasMore.current = true;
 
-    setProductList([]);
+    setProductData(new Map());
     loadMore({ filterOptions, sortOptions }, controller);
 
     return () => controller.abort();
-  }, [filterOptions, sortOptions, loadMore]);
+  }, [filterOptions, sortOptions, loadMore, setProductData]);
 
   useEffect(() => {
     const onBackPress = () => {
