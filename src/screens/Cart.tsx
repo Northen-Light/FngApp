@@ -11,7 +11,7 @@ export function Cart() {
 
   return (
     <View style={styles.profileContainer}>
-      <Text style={styles.headerText}> Cart Screen</Text>
+      <Text style={styles.headerText}>Cart Screen</Text>
     </View>
   );
 }
