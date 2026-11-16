@@ -1,11 +1,16 @@
 import { ReactElement, useReducer } from 'react';
 import { createSafeContext } from '../context';
 
-type State = Record<string, { quantity: number }>;
+type State = {
+  items: Record<string, { quantity: number; amount: number }>;
+  totalQuantity: number;
+  totalAmount: number;
+};
 type Action = {
   type: 'INCREMENT' | 'DECREMENT';
   payload: {
     id: number;
+    price: number;
   };
 };
 
@@ -14,17 +19,25 @@ const [CartContext, useCart] = createSafeContext<{
   dispatch: (action: Action) => void;
 }>('Cart');
 
-const defaultState = {};
+const defaultState: State = {
+  items: {},
+  totalQuantity: 0,
+  totalAmount: 0,
+};
 
 const cartReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'INCREMENT': {
       const next = { ...state };
-      if (action.payload.id in next) {
-        next[action.payload.id].quantity++;
+      if (action.payload.id in next.items) {
+        next.items[action.payload.id].quantity++;
+        next.items[action.payload.id].amount += action.payload.price;
+        next.totalAmount++;
+        next.totalQuantity += action.payload.price;
       } else {
-        next[action.payload.id] = {
+        next.items[action.payload.id] = {
           quantity: 1,
+          amount: action.payload.price,
         };
       }
       return next;
@@ -32,10 +45,13 @@ const cartReducer = (state: State, action: Action): State => {
 
     case 'DECREMENT': {
       const next = { ...state };
-      if (next[action.payload.id].quantity > 0) {
-        next[action.payload.id].quantity--;
-        if (next[action.payload.id].quantity === 0) {
-          delete next[action.payload.id];
+      if (next.items[action.payload.id].quantity > 0) {
+        next.items[action.payload.id].quantity--;
+        next.items[action.payload.id].amount -= action.payload.price;
+        next.totalAmount--;
+        next.totalQuantity -= action.payload.price;
+        if (next.items[action.payload.id].quantity === 0) {
+          delete next.items[action.payload.id];
         }
       }
       return next;

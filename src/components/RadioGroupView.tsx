@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
@@ -14,52 +15,54 @@ type RadioGroupFilterProps = {
   handleClose: () => void;
 };
 
-export function RadioGroupView({
-  items,
-  selectedValue,
-  onSelectedValueChange,
-  headerText,
-  handleClose,
-}: RadioGroupFilterProps) {
-  return (
-    <View>
-      <View style={styles.headerContainer}>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>{headerText}</Text>
-        </View>
-        <Pressable
-          onPress={handleClose}
-          style={({ pressed }) => [
-            styles.crossIconContainer,
-            { opacity: pressed ? 0.5 : 1.0 },
-          ]}
-        >
-          <FastImage
-            style={styles.crossIcon}
-            source={require('@assets/close.png')}
-          />
-        </Pressable>
-      </View>
-
-      <View style={styles.radioGroup}>
-        {items.map((item, index) => (
+export const RadioGroupView = memo(
+  ({
+    items,
+    selectedValue,
+    onSelectedValueChange,
+    headerText,
+    handleClose,
+  }: RadioGroupFilterProps) => {
+    return (
+      <View>
+        <View style={styles.headerContainer}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerText}>{headerText}</Text>
+          </View>
           <Pressable
-            hitSlop={{ left: 16 }}
-            key={item.id}
-            style={styles.radioGroupItem}
-            onPress={() => onSelectedValueChange(index)}
+            onPress={handleClose}
+            style={({ pressed }) => [
+              styles.crossIconContainer,
+              { opacity: pressed ? 0.5 : 1.0 },
+            ]}
           >
-            <View style={styles.buttonOuter}>
-              {selectedValue === index && <View style={styles.buttonInner} />}
-            </View>
-
-            <Text style={styles.itemText}>{item.name}</Text>
+            <FastImage
+              style={styles.crossIcon}
+              source={require('@assets/close.png')}
+            />
           </Pressable>
-        ))}
+        </View>
+
+        <View style={styles.radioGroup}>
+          {items.map((item, index) => (
+            <Pressable
+              hitSlop={{ left: 16 }}
+              key={item.id}
+              style={styles.radioGroupItem}
+              onPress={() => onSelectedValueChange(index)}
+            >
+              <View style={styles.buttonOuter}>
+                {selectedValue === index && <View style={styles.buttonInner} />}
+              </View>
+
+              <Text style={styles.itemText}>{item.name}</Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
-    </View>
-  );
-}
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   headerContainer: {

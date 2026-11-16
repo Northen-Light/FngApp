@@ -276,6 +276,36 @@ export function ProductLanding() {
     return () => subscription.remove();
   }, []);
 
+  const onPlusButtonPress = useCallback(
+    (data: Product) => {
+      dispatch({
+        type: 'INCREMENT',
+        payload: { id: data.id, price: data.price },
+      });
+    },
+    [dispatch],
+  );
+
+  const onMinusButtonPress = useCallback(
+    (data: Product) => {
+      dispatch({
+        type: 'DECREMENT',
+        payload: { id: data.id, price: data.price },
+      });
+    },
+    [dispatch],
+  );
+
+  const onAddButtonPress = useCallback(
+    (data: Product) => {
+      dispatch({
+        type: 'INCREMENT',
+        payload: { id: data.id, price: data.price },
+      });
+    },
+    [dispatch],
+  );
+
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
       <FlashList
@@ -299,26 +329,11 @@ export function ProductLanding() {
             case 'Product':
               return (
                 <ListItem
-                  item={item.data}
-                  count={cartState[item.data.id]?.quantity}
-                  onPlusButtonPress={() =>
-                    dispatch({
-                      type: 'INCREMENT',
-                      payload: { id: item.data.id },
-                    })
-                  }
-                  onMinusButtonPress={() =>
-                    dispatch({
-                      type: 'DECREMENT',
-                      payload: { id: item.data.id },
-                    })
-                  }
-                  onAddButtonPress={() =>
-                    dispatch({
-                      type: 'INCREMENT',
-                      payload: { id: item.data.id },
-                    })
-                  }
+                  data={item.data}
+                  count={cartState.items[item.data.id]?.quantity ?? 0}
+                  onPlusButtonPress={onPlusButtonPress}
+                  onMinusButtonPress={onMinusButtonPress}
+                  onAddButtonPress={onAddButtonPress}
                 />
               );
           }

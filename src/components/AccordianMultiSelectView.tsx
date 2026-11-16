@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
@@ -23,92 +24,94 @@ type AccordianMultiSelectViewProps = {
   handleClose: () => void;
 };
 
-export function AccordianMultiSelectView({
-  items,
-  selectedAccordians,
-  onSelectedAccordiansChange,
-  selectedValues,
-  onSelectedValuesChange,
-  headerText,
-  handleClose,
-}: AccordianMultiSelectViewProps) {
-  return (
-    <View style={styles.parentContainer}>
-      <View style={styles.headerContainer}>
-        <View style={styles.headerTextContainer}>
-          <Text style={styles.headerText}>{headerText}</Text>
+export const AccordianMultiSelectView = memo(
+  ({
+    items,
+    selectedAccordians,
+    onSelectedAccordiansChange,
+    selectedValues,
+    onSelectedValuesChange,
+    headerText,
+    handleClose,
+  }: AccordianMultiSelectViewProps) => {
+    return (
+      <View style={styles.parentContainer}>
+        <View style={styles.headerContainer}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerText}>{headerText}</Text>
+          </View>
+          <Pressable
+            onPress={handleClose}
+            style={({ pressed }) => [
+              styles.crossIconContainer,
+              { opacity: pressed ? 0.5 : 1.0 },
+            ]}
+          >
+            <FastImage
+              style={styles.crossIcon}
+              source={require('@assets/close.png')}
+            />
+          </Pressable>
         </View>
-        <Pressable
-          onPress={handleClose}
-          style={({ pressed }) => [
-            styles.crossIconContainer,
-            { opacity: pressed ? 0.5 : 1.0 },
-          ]}
-        >
-          <FastImage
-            style={styles.crossIcon}
-            source={require('@assets/close.png')}
-          />
-        </Pressable>
-      </View>
 
-      <View style={styles.multiSelectContainer}>
-        {items.map((item, outerIndex) => (
-          <View key={item.id}>
-            <Pressable
-              style={styles.accordianHeaderContainer}
-              onPress={() => onSelectedAccordiansChange(outerIndex)}
-            >
-              <Text style={styles.itemText}>{item.name}</Text>
-              <FastImage
-                style={styles.arrowIcon}
-                source={
-                  selectedAccordians[outerIndex]
-                    ? require('@assets/arrow-up.png')
-                    : require('@assets/arrow-down.png')
-                }
-              />
-            </Pressable>
-
-            {selectedAccordians[outerIndex] && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.accordianBodyContainer}
+        <View style={styles.multiSelectContainer}>
+          {items.map((item, outerIndex) => (
+            <View key={item.id}>
+              <Pressable
+                style={styles.accordianHeaderContainer}
+                onPress={() => onSelectedAccordiansChange(outerIndex)}
               >
-                {item.values.map((value, innerIndex) => (
-                  <Pressable
-                    key={value.id}
-                    style={[
-                      styles.capsule,
-                      selectedValues[outerIndex][innerIndex]
-                        ? styles.bgBlack
-                        : {},
-                    ]}
-                    onPress={() =>
-                      onSelectedValuesChange(outerIndex, innerIndex)
-                    }
-                  >
-                    <Text
+                <Text style={styles.itemText}>{item.name}</Text>
+                <FastImage
+                  style={styles.arrowIcon}
+                  source={
+                    selectedAccordians[outerIndex]
+                      ? require('@assets/arrow-up.png')
+                      : require('@assets/arrow-down.png')
+                  }
+                />
+              </Pressable>
+
+              {selectedAccordians[outerIndex] && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.accordianBodyContainer}
+                >
+                  {item.values.map((value, innerIndex) => (
+                    <Pressable
+                      key={value.id}
                       style={[
-                        styles.itemValueText,
+                        styles.capsule,
                         selectedValues[outerIndex][innerIndex]
-                          ? styles.textColorWhite
+                          ? styles.bgBlack
                           : {},
                       ]}
+                      onPress={() =>
+                        onSelectedValuesChange(outerIndex, innerIndex)
+                      }
                     >
-                      {value.name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            )}
-          </View>
-        ))}
+                      <Text
+                        style={[
+                          styles.itemValueText,
+                          selectedValues[outerIndex][innerIndex]
+                            ? styles.textColorWhite
+                            : {},
+                        ]}
+                      >
+                        {value.name}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              )}
+            </View>
+          ))}
+        </View>
       </View>
-    </View>
-  );
-}
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   parentContainer: {

@@ -2,62 +2,68 @@ import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import type { MultiSelect, Operation } from '../types';
+import { memo } from 'react';
 
 type ListHeaderTabBar = {
   items: MultiSelect[];
   onTabPress: (type: Operation, index?: number) => void;
 };
 
-export const ListHeaderTabBar = ({ items, onTabPress }: ListHeaderTabBar) => {
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      style={styles.parentContainer}
-    >
-      <Pressable
-        style={styles.boxContainer}
-        onPress={() => onTabPress('FILTER')}
+export const ListHeaderTabBar = memo(
+  ({ items, onTabPress }: ListHeaderTabBar) => {
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.parentContainer}
       >
-        <FastImage
-          style={styles.filterIcon}
-          source={require('@assets/filter.png')}
-        />
-        <Text style={styles.font16}>Filter</Text>
-        <FastImage
-          style={styles.arrowDownIcon}
-          source={require('@assets/arrow-down.png')}
-        />
-      </Pressable>
-
-      <Pressable style={styles.boxContainer} onPress={() => onTabPress('SORT')}>
-        <FastImage
-          style={styles.filterIcon}
-          source={require('@assets/sort.png')}
-        />
-        <Text style={styles.font16}>Sort</Text>
-        <FastImage
-          style={styles.arrowDownIcon}
-          source={require('@assets/arrow-down.png')}
-        />
-      </Pressable>
-
-      {items.map((item, index) => (
         <Pressable
-          key={item.id}
           style={styles.boxContainer}
-          onPress={() => onTabPress('FILTER', index)}
+          onPress={() => onTabPress('FILTER')}
         >
-          <Text style={styles.font16}>{item.name}</Text>
+          <FastImage
+            style={styles.filterIcon}
+            source={require('@assets/filter.png')}
+          />
+          <Text style={styles.font16}>Filter</Text>
           <FastImage
             style={styles.arrowDownIcon}
             source={require('@assets/arrow-down.png')}
           />
         </Pressable>
-      ))}
-    </ScrollView>
-  );
-};
+
+        <Pressable
+          style={styles.boxContainer}
+          onPress={() => onTabPress('SORT')}
+        >
+          <FastImage
+            style={styles.filterIcon}
+            source={require('@assets/sort.png')}
+          />
+          <Text style={styles.font16}>Sort</Text>
+          <FastImage
+            style={styles.arrowDownIcon}
+            source={require('@assets/arrow-down.png')}
+          />
+        </Pressable>
+
+        {items.map((item, index) => (
+          <Pressable
+            key={item.id}
+            style={styles.boxContainer}
+            onPress={() => onTabPress('FILTER', index)}
+          >
+            <Text style={styles.font16}>{item.name}</Text>
+            <FastImage
+              style={styles.arrowDownIcon}
+              source={require('@assets/arrow-down.png')}
+            />
+          </Pressable>
+        ))}
+      </ScrollView>
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   parentContainer: {
