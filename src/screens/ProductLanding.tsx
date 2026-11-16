@@ -28,6 +28,7 @@ import {
 } from '../constants/constants';
 import { AccordianMultiSelectView } from '../components/AccordianMultiSelectView';
 import { RadioGroupView } from '../components/RadioGroupView';
+import { useCart } from '../contextProviders/CartProvider';
 
 export function ProductLanding() {
   const [productList, setProductList] = useState<Product[]>([]);
@@ -53,6 +54,8 @@ export function ProductLanding() {
   const isLoading = useRef(false);
   const hasMore = useRef(true);
   const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const { cartState, dispatch } = useCart();
 
   const loadMore = useCallback(
     async (
@@ -294,7 +297,30 @@ export function ProductLanding() {
                 />
               );
             case 'Product':
-              return <ListItem item={item.data} />;
+              return (
+                <ListItem
+                  item={item.data}
+                  count={cartState[item.data.id]?.quantity}
+                  onPlusButtonPress={() =>
+                    dispatch({
+                      type: 'INCREMENT',
+                      payload: { id: item.data.id },
+                    })
+                  }
+                  onMinusButtonPress={() =>
+                    dispatch({
+                      type: 'DECREMENT',
+                      payload: { id: item.data.id },
+                    })
+                  }
+                  onAddButtonPress={() =>
+                    dispatch({
+                      type: 'INCREMENT',
+                      payload: { id: item.data.id },
+                    })
+                  }
+                />
+              );
           }
         }}
         style={styles.flashList}

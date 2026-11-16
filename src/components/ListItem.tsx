@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import type { Product } from '../types';
@@ -8,31 +8,78 @@ import { UA } from '../constants/constants';
 
 type ListItemProps = {
   item: Product;
+  count: number;
+  onPlusButtonPress: () => void;
+  onMinusButtonPress: () => void;
+  onAddButtonPress: () => void;
 };
 
-export const ListItem = memo(({ item }: ListItemProps) => {
-  return (
-    <View style={styles.m16}>
-      <FastImage
-        recyclingKey={item.id.toString()}
-        transition
-        objectFit="cover"
-        style={styles.image}
-        source={{
-          uri: item.imageURL,
-          headers: { 'User-Agent': UA },
-        }}
-        onError={({ nativeEvent }) => {
-          console.log(item.name, nativeEvent.error);
-        }}
-      />
-      <View style={styles.mt8}>
-        <Text style={styles.productNameText}>{item.name}</Text>
-        <Text style={styles.productPriceText}>₹{item.price}</Text>
+export const ListItem = memo(
+  ({
+    item,
+    count,
+    onPlusButtonPress,
+    onMinusButtonPress,
+    onAddButtonPress,
+  }: ListItemProps) => {
+    return (
+      <View style={styles.m16}>
+        <FastImage
+          recyclingKey={item.id.toString()}
+          transition
+          objectFit="cover"
+          style={styles.image}
+          source={{
+            uri: item.imageURL,
+            headers: { 'User-Agent': UA },
+          }}
+          onError={({ nativeEvent }) => {
+            console.log(item.name, nativeEvent.error);
+          }}
+        />
+        <View style={styles.bottomContainer}>
+          <View style={[styles.mt8, styles.width60percent]}>
+            <Text style={styles.productNameText}>{item.name}</Text>
+            <Text style={styles.productPriceText}>₹{item.price}</Text>
+          </View>
+          {count ? (
+            <View style={styles.modifyContainer}>
+              <Pressable
+                onPress={onMinusButtonPress}
+                style={({ pressed }) => ({
+                  marginRight: 4,
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <Text style={styles.textWhite}>-</Text>
+              </Pressable>
+              <Text style={styles.textWhite}>{count}</Text>
+              <Pressable
+                onPress={onPlusButtonPress}
+                style={({ pressed }) => ({
+                  marginLeft: 4,
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <Text style={styles.textWhite}>+</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Pressable
+              onPress={onAddButtonPress}
+              style={({ pressed }) => ({
+                ...styles.addButtonContainer,
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Text style={styles.textWhite}>Add</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
-    </View>
-  );
-});
+    );
+  },
+);
 
 const styles = StyleSheet.create({
   image: {
@@ -54,5 +101,29 @@ const styles = StyleSheet.create({
   },
   mt8: {
     marginTop: 8,
+  },
+  bottomContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  modifyContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'black',
+    padding: 8,
+    borderRadius: 8,
+  },
+  addButtonContainer: {
+    backgroundColor: 'black',
+    alignItems: 'center',
+    borderRadius: 8,
+    padding: 8,
+  },
+  textWhite: {
+    color: 'white',
+  },
+  width60percent: {
+    width: '60%',
   },
 });
