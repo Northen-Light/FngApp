@@ -46,6 +46,7 @@ export const ListItem = memo(
             <View style={styles.modifyContainer}>
               <Pressable
                 onPress={onMinusButtonPress}
+                hitSlop={16}
                 style={({ pressed }) => ({
                   marginRight: 4,
                   opacity: pressed ? 0.5 : 1,
@@ -56,6 +57,7 @@ export const ListItem = memo(
               <Text style={styles.textWhite}>{count}</Text>
               <Pressable
                 onPress={onPlusButtonPress}
+                hitSlop={16}
                 style={({ pressed }) => ({
                   marginLeft: 4,
                   opacity: pressed ? 0.5 : 1,
@@ -110,9 +112,11 @@ const styles = StyleSheet.create({
   },
   modifyContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-around',
     backgroundColor: 'black',
     padding: 8,
     borderRadius: 8,
+    minWidth: 60,
   },
   addButtonContainer: {
     backgroundColor: 'black',
