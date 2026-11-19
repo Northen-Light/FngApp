@@ -9,6 +9,7 @@ import { Action, useCart } from '../contextProviders/CartProvider';
 type ListData = [string, { quantity: number; amount: number }];
 
 export function Cart() {
+  const { productData } = useProductData();
   const { cartState, dispatch } = useCart();
   const [listData, setListData] = useState<ListData[]>([]);
 
@@ -18,13 +19,17 @@ export function Cart() {
 
   return (
     <View style={styles.profileContainer}>
-      {listData.length > 0 ? (
+      {listData.length > 0 && productData.size > 0 ? (
         <FlashList
           style={styles.flashlistContainer}
           data={listData}
           keyExtractor={item => item[0]}
           renderItem={({ item }) => (
-            <ListItem item={item} dispatch={dispatch} />
+            <ListItem
+              item={item}
+              dispatch={dispatch}
+              product={productData.get(Number(item[0])) as Product}
+            />
           )}
         />
       ) : (
@@ -37,15 +42,13 @@ export function Cart() {
 type ListItemProps = {
   item: ListData;
   dispatch: (action: Action) => void;
+  product: Product;
 };
 
 const ListItem = memo(
-  ({ item, dispatch }: ListItemProps) => {
-    const { productData } = useProductData();
-
+  ({ item, dispatch, product }: ListItemProps) => {
     const id = item[0];
     const cartItem = item[1];
-    const product = productData.get(Number(id)) as Product;
 
     console.log(`Render:${id}`);
 

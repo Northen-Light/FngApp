@@ -6,13 +6,17 @@ type State = {
   totalQuantity: number;
   totalAmount: number;
 };
-export type Action = {
-  type: 'INCREMENT' | 'DECREMENT';
-  payload: {
-    id: number;
-    price: number;
-  };
-};
+export type Action =
+  | {
+      type: 'INCREMENT' | 'DECREMENT' | 'RESET';
+      payload: {
+        id: number;
+        price: number;
+      };
+    }
+  | {
+      type: 'RESET';
+    };
 
 const [CartContext, useCart] = createSafeContext<{
   cartState: State;
@@ -76,6 +80,10 @@ const cartReducer = (state: State, action: Action): State => {
         }
       }
       return next;
+    }
+
+    case 'RESET': {
+      return defaultState;
     }
   }
 };

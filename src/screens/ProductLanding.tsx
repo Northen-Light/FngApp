@@ -266,10 +266,11 @@ export function ProductLanding() {
     hasMore.current = true;
 
     setProductData(new Map());
+    dispatch({ type: 'RESET' });
     loadMore({ filterOptions, sortOptions }, controller);
 
     return () => controller.abort();
-  }, [filterOptions, sortOptions, loadMore, setProductData]);
+  }, [filterOptions, sortOptions, loadMore, setProductData, dispatch]);
 
   useEffect(() => {
     const onBackPress = () => {
