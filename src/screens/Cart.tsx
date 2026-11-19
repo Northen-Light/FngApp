@@ -41,7 +41,7 @@ export function Cart() {
 
   if (loading) {
     return (
-      <View style={styles.profileContainer}>
+      <View style={styles.cartContainer}>
         <ActivityIndicator color="black" size="large" />
         <View style={styles.separator} />
         <Text style={styles.headerText}>Processing Payment...</Text>
@@ -51,7 +51,7 @@ export function Cart() {
 
   if (listData.length > 0 && productData.size > 0) {
     return (
-      <View style={styles.profileContainer}>
+      <View style={styles.cartContainer}>
         <View style={styles.parentContainer}>
           <FlashList
             style={styles.flashlistContainer}
@@ -97,7 +97,7 @@ export function Cart() {
   }
 
   return (
-    <View style={styles.profileContainer}>
+    <View style={styles.cartContainer}>
       <Text style={styles.headerText}>Cart is empty !!!</Text>
     </View>
   );
@@ -183,7 +183,7 @@ const ListItem = memo(
 );
 
 const styles = StyleSheet.create({
-  profileContainer: {
+  cartContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
