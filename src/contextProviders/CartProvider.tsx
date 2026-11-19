@@ -32,14 +32,14 @@ const cartReducer = (state: State, action: Action): State => {
       if (action.payload.id in next.items) {
         next.items[action.payload.id].quantity++;
         next.items[action.payload.id].amount += action.payload.price;
-        next.totalAmount++;
-        next.totalQuantity += action.payload.price;
       } else {
         next.items[action.payload.id] = {
           quantity: 1,
           amount: action.payload.price,
         };
       }
+      next.totalQuantity++;
+      next.totalAmount += action.payload.price;
       return next;
     }
 
@@ -48,8 +48,8 @@ const cartReducer = (state: State, action: Action): State => {
       if (next.items[action.payload.id].quantity > 0) {
         next.items[action.payload.id].quantity--;
         next.items[action.payload.id].amount -= action.payload.price;
-        next.totalAmount--;
-        next.totalQuantity -= action.payload.price;
+        next.totalQuantity--;
+        next.totalAmount -= action.payload.price;
         if (next.items[action.payload.id].quantity === 0) {
           delete next.items[action.payload.id];
         }
