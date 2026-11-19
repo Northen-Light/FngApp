@@ -18,12 +18,18 @@ export function Cart() {
 
   return (
     <View style={styles.profileContainer}>
-      <FlashList
-        style={styles.flashlistContainer}
-        data={listData}
-        keyExtractor={item => item[0]}
-        renderItem={({ item }) => <ListItem item={item} dispatch={dispatch} />}
-      />
+      {listData.length > 0 ? (
+        <FlashList
+          style={styles.flashlistContainer}
+          data={listData}
+          keyExtractor={item => item[0]}
+          renderItem={({ item }) => (
+            <ListItem item={item} dispatch={dispatch} />
+          )}
+        />
+      ) : (
+        <Text style={styles.headerText}>Cart is empty !!!</Text>
+      )}
     </View>
   );
 }
