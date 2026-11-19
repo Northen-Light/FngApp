@@ -153,6 +153,13 @@ export function ProductLanding() {
     (outerIndex: number, innerIndex: number) => {
       setFilterOptions(current => {
         const next = [...current];
+        for (let i = 0; i < next.length; i++) {
+          next[i] = {
+            filterId: next[i].filterId,
+            filterValueIds: [...next[i].filterValueIds],
+          };
+        }
+
         if (!selectedFilterValues[outerIndex][innerIndex]) {
           if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
             next[outerIndex].filterValueIds.pop();
@@ -172,6 +179,10 @@ export function ProductLanding() {
 
       setSelectedFilterValues(current => {
         const next = [...current];
+
+        for (let i = 0; i < next.length; i++) {
+          next[i] = [...next[i]];
+        }
 
         if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
           for (let i = 0; i < next[outerIndex].length; i++) {
@@ -355,7 +366,7 @@ export function ProductLanding() {
         onEndReachedThreshold={0.2}
         onEndReached={onEndReachedCallback}
         ListFooterComponent={
-          <ActivityIndicator size="large" color="blue" animating={loading} />
+          <ActivityIndicator size="large" color="black" animating={loading} />
         }
       />
 

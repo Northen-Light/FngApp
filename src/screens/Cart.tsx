@@ -1,40 +1,104 @@
 import { FlashList } from '@shopify/flash-list';
 import FastImage from 'react-native-fast-image';
-import { memo, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import type { Product } from '../types';
+import { memo, useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
+import type { NativeBottomTabNavigationProp } from '@react-navigation/bottom-tabs/unstable';
+import type { BottomTabsParamList, Product } from '../types';
 import { useProductData } from '../contextProviders/ProductDataProvider';
 import { Action, useCart } from '../contextProviders/CartProvider';
+import { useNavigation } from '@react-navigation/native';
 
 type ListData = [string, { quantity: number; amount: number }];
 
+type CartNavigationProp = NativeBottomTabNavigationProp<
+  BottomTabsParamList,
+  'Cart'
+>;
+
 export function Cart() {
+  const navigation: CartNavigationProp = useNavigation();
+
   const { productData } = useProductData();
   const { cartState, dispatch } = useCart();
   const [listData, setListData] = useState<ListData[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const timerRef = useRef<number>(null);
+
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
 
   useEffect(() => {
     setListData(Object.entries(cartState.items));
   }, [cartState]);
 
+  if (loading) {
+    return (
+      <View style={styles.profileContainer}>
+        <ActivityIndicator color="black" size="large" />
+        <View style={styles.separator} />
+        <Text style={styles.headerText}>Processing Payment...</Text>
+      </View>
+    );
+  }
+
+  if (listData.length > 0 && productData.size > 0) {
+    return (
+      <View style={styles.profileContainer}>
+        <View style={styles.parentContainer}>
+          <FlashList
+            style={styles.flashlistContainer}
+            data={listData}
+            keyExtractor={item => item[0]}
+            renderItem={({ item }) => (
+              <ListItem
+                item={item}
+                dispatch={dispatch}
+                product={productData.get(Number(item[0])) as Product}
+              />
+            )}
+          />
+          <View style={styles.checkoutContainer}>
+            <Text style={styles.totalAmountQuantityDetails}>
+              Total : {''}
+              <Text style={styles.totalAmountText}>
+                ₹{cartState.totalAmount}
+              </Text>{' '}
+              (x
+              {cartState.totalQuantity})
+            </Text>
+            <Pressable
+              onPress={() => {
+                setLoading(true);
+                timerRef.current = setTimeout(() => {
+                  dispatch({ type: 'RESET' });
+                  setLoading(false);
+                  navigation.navigate('Home');
+                }, 3000);
+              }}
+              style={({ pressed }) => ({
+                ...styles.payNowButton,
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Text style={styles.payNowButtonText}>Pay now</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.profileContainer}>
-      {listData.length > 0 && productData.size > 0 ? (
-        <FlashList
-          style={styles.flashlistContainer}
-          data={listData}
-          keyExtractor={item => item[0]}
-          renderItem={({ item }) => (
-            <ListItem
-              item={item}
-              dispatch={dispatch}
-              product={productData.get(Number(item[0])) as Product}
-            />
-          )}
-        />
-      ) : (
-        <Text style={styles.headerText}>Cart is empty !!!</Text>
-      )}
+      <Text style={styles.headerText}>Cart is empty !!!</Text>
     </View>
   );
 }
@@ -132,6 +196,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  parentContainer: {
+    width: '100%',
+    height: '100%',
+  },
+  separator: {
+    marginVertical: 16,
+  },
   combinedProductContainer: {
     height: 60,
     borderColor: 'black',
@@ -168,5 +239,31 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
+  },
+  checkoutContainer: {
+    height: 68,
+    borderColor: 'black',
+    borderWidth: 1,
+    borderRadius: 32,
+    margin: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+  },
+  totalAmountQuantityDetails: {
+    fontSize: 16,
+  },
+  totalAmountText: {
+    fontWeight: 'bold',
+  },
+  payNowButton: {
+    backgroundColor: 'black',
+    padding: 16,
+    borderRadius: 16,
+  },
+  payNowButtonText: {
+    color: 'white',
+    fontSize: 16,
   },
 });
