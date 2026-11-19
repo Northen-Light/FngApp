@@ -6,7 +6,7 @@ type State = {
   totalQuantity: number;
   totalAmount: number;
 };
-type Action = {
+export type Action = {
   type: 'INCREMENT' | 'DECREMENT';
   payload: {
     id: number;
@@ -28,8 +28,18 @@ const defaultState: State = {
 const cartReducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'INCREMENT': {
-      const next = { ...state };
+      const next = {
+        ...state,
+        items: {
+          ...state.items,
+        },
+      };
+
       if (action.payload.id in next.items) {
+        next.items[action.payload.id] = {
+          ...next.items[action.payload.id],
+        };
+
         next.items[action.payload.id].quantity++;
         next.items[action.payload.id].amount += action.payload.price;
       } else {
@@ -44,12 +54,23 @@ const cartReducer = (state: State, action: Action): State => {
     }
 
     case 'DECREMENT': {
-      const next = { ...state };
+      const next = {
+        ...state,
+        items: {
+          ...state.items,
+        },
+      };
+
       if (next.items[action.payload.id].quantity > 0) {
+        next.items[action.payload.id] = {
+          ...next.items[action.payload.id],
+        };
+
         next.items[action.payload.id].quantity--;
         next.items[action.payload.id].amount -= action.payload.price;
         next.totalQuantity--;
         next.totalAmount -= action.payload.price;
+
         if (next.items[action.payload.id].quantity === 0) {
           delete next.items[action.payload.id];
         }
