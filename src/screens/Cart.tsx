@@ -67,7 +67,7 @@ export function Cart() {
           />
           <View style={styles.checkoutContainer}>
             <Text style={styles.totalAmountQuantityDetails}>
-              Total : {''}
+              Total :{' '}
               <Text style={styles.totalAmountText}>
                 ₹{cartState.totalAmount}
               </Text>{' '}
