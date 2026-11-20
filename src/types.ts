@@ -1,7 +1,7 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NavigatorScreenParams } from '@react-navigation/native';
 
 export type BottomTabsParamList = {
-  Home: NativeStackScreenProps<ProductStackParamList> | undefined;
+  Home: NavigatorScreenParams<ProductStackParamList> | undefined;
   Cart: undefined;
   Profile: undefined;
 };
