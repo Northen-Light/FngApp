@@ -152,13 +152,12 @@ export function ProductLanding() {
   const onSelectedFilterValuesChange = useCallback(
     (outerIndex: number, innerIndex: number) => {
       setFilterOptions(current => {
-        const next = [...current];
-        for (let i = 0; i < next.length; i++) {
-          next[i] = {
-            filterId: next[i].filterId,
-            filterValueIds: [...next[i].filterValueIds],
-          };
-        }
+        const next = [
+          ...current.map(value => ({
+            filterId: value.filterId,
+            filterValueIds: [...value.filterValueIds],
+          })),
+        ];
 
         if (!selectedFilterValues[outerIndex][innerIndex]) {
           if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
@@ -178,11 +177,7 @@ export function ProductLanding() {
       });
 
       setSelectedFilterValues(current => {
-        const next = [...current];
-
-        for (let i = 0; i < next.length; i++) {
-          next[i] = [...next[i]];
-        }
+        const next = [...current.map(value => [...value])];
 
         if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
           for (let i = 0; i < next[outerIndex].length; i++) {
