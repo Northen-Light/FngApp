@@ -28,16 +28,34 @@ export function Cart() {
   const { cartState, dispatch } = useCart();
   const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);
+  const [orderStatus, setOrderStatus] = useState<'IN_PROGRESS' | 'DELIVERED'>();
 
-  const timerRef = useRef<number>(null);
+  const timerRefs = useRef<number[]>([]);
 
   useEffect(() => {
-    return () => clearTimeout(timerRef.current);
+    const timers = timerRefs.current;
+    return () => timers.forEach(timer => clearTimeout(timer));
   }, []);
 
   useEffect(() => {
     setListData(Object.entries(cartState.items));
   }, [cartState]);
+
+  if (orderStatus) {
+    return (
+      <View style={styles.cartContainer}>
+        {orderStatus === 'IN_PROGRESS' ? (
+          <>
+            <Text style={styles.headerText}>Payment Successful.</Text>
+            <View style={styles.separator} />
+            <Text style={styles.headerText}>Order will be delivered soon.</Text>
+          </>
+        ) : (
+          <Text style={styles.headerText}>Order Delivered !!!</Text>
+        )}
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -77,11 +95,26 @@ export function Cart() {
             <Pressable
               onPress={() => {
                 setLoading(true);
-                timerRef.current = setTimeout(() => {
-                  dispatch({ type: 'RESET' });
-                  setLoading(false);
-                  navigation.navigate('Home');
-                }, 3000);
+                timerRefs.current.push(
+                  setTimeout(() => {
+                    setLoading(false);
+                    setOrderStatus('IN_PROGRESS');
+
+                    timerRefs.current.push(
+                      setTimeout(() => {
+                        setOrderStatus('DELIVERED');
+                        dispatch({ type: 'RESET' });
+
+                        timerRefs.current.push(
+                          setTimeout(() => {
+                            setOrderStatus(undefined);
+                            navigation.navigate('Home');
+                          }, 1000),
+                        );
+                      }, 3000),
+                    );
+                  }, 3000),
+                );
               }}
               style={({ pressed }) => ({
                 ...styles.payNowButton,
@@ -189,8 +222,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerText: {
+    marginHorizontal: 16,
     fontSize: 24,
     color: 'black',
+    textAlign: 'center',
   },
   flashlistContainer: {
     width: '100%',
@@ -201,7 +236,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   separator: {
-    marginVertical: 16,
+    marginVertical: 8,
   },
   combinedProductContainer: {
     height: 60,
