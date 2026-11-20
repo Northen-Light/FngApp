@@ -3,7 +3,6 @@ import { StatusBar, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BottomTabs } from './navigators/BottomTabs';
 import { CartProvider } from './contextProviders/CartProvider';
-import { ProductDataProvider } from './contextProviders/ProductDataProvider';
 
 export default function App() {
   return (
@@ -16,13 +15,11 @@ export default function App() {
 
 function AppContent() {
   return (
-    <ProductDataProvider>
-      <CartProvider>
-        <NavigationContainer>
-          <BottomTabs />
-        </NavigationContainer>
-      </CartProvider>
-    </ProductDataProvider>
+    <CartProvider>
+      <NavigationContainer>
+        <BottomTabs />
+      </NavigationContainer>
+    </CartProvider>
   );
 }
 

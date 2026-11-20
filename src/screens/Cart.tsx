@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import type { NativeBottomTabNavigationProp } from '@react-navigation/bottom-tabs/unstable';
 import type { BottomTabsParamList, Product } from '../types';
-import { useProductData } from '../contextProviders/ProductDataProvider';
 import { Action, useCart } from '../contextProviders/CartProvider';
 import { useNavigation } from '@react-navigation/native';
+import { useProductData } from '../hooks/useProductData';
 
 type ListData = [string, { quantity: number; amount: number }];
 
@@ -24,7 +24,7 @@ type CartNavigationProp = NativeBottomTabNavigationProp<
 export function Cart() {
   const navigation: CartNavigationProp = useNavigation();
 
-  const { productData } = useProductData();
+  const productData = useProductData(state => state.productData);
   const { cartState, dispatch } = useCart();
   const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);

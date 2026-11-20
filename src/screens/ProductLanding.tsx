@@ -29,7 +29,7 @@ import {
 import { AccordianMultiSelectView } from '../components/AccordianMultiSelectView';
 import { RadioGroupView } from '../components/RadioGroupView';
 import { useCart } from '../contextProviders/CartProvider';
-import { useProductData } from '../contextProviders/ProductDataProvider';
+import { useProductData } from '../hooks/useProductData';
 
 export function ProductLanding() {
   const [listData, setListData] = useState<ListData[]>([]);
@@ -76,13 +76,7 @@ export function ProductLanding() {
         );
         console.log(response);
 
-        setProductData(current => {
-          const next = new Map<number, Product>(current);
-          for (let i = 0; i < response.data.length; i++) {
-            next.set(response.data[i].id, response.data[i]);
-          }
-          return next;
-        });
+        setProductData(response.data);
 
         hasMore.current = !response.pageEnd;
       } catch (e) {
@@ -271,7 +265,7 @@ export function ProductLanding() {
     isLoading.current = false;
     hasMore.current = true;
 
-    setProductData(new Map());
+    setProductData([]);
     dispatch({ type: 'RESET' });
     loadMore({ filterOptions, sortOptions }, controller);
 
