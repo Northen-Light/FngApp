@@ -7,16 +7,16 @@ import type { Product } from '../types';
 import { UA } from '../constants/constants';
 
 type ListItemProps = {
-  data: Product;
+  product: Product;
   count: number;
-  onPlusButtonPress: (data: Product) => void;
-  onMinusButtonPress: (data: Product) => void;
-  onAddButtonPress: (data: Product) => void;
+  onPlusButtonPress: (product: Product) => void;
+  onMinusButtonPress: (product: Product) => void;
+  onAddButtonPress: (product: Product) => void;
 };
 
 export const ListItem = memo(
   ({
-    data,
+    product,
     count,
     onPlusButtonPress,
     onMinusButtonPress,
@@ -25,27 +25,27 @@ export const ListItem = memo(
     return (
       <View style={styles.m16}>
         <FastImage
-          recyclingKey={data.id.toString()}
+          recyclingKey={product.id.toString()}
           transition
           objectFit="cover"
           style={styles.image}
           source={{
-            uri: data.imageURL,
+            uri: product.imageURL,
             headers: { 'User-Agent': UA },
           }}
           onError={({ nativeEvent }) => {
-            console.log(data.name, nativeEvent.error);
+            console.log(product.name, nativeEvent.error);
           }}
         />
         <View style={styles.bottomContainer}>
           <View style={[styles.mt8, styles.width60percent]}>
-            <Text style={styles.productNameText}>{data.name}</Text>
-            <Text style={styles.productPriceText}>₹{data.price}</Text>
+            <Text style={styles.productNameText}>{product.name}</Text>
+            <Text style={styles.productPriceText}>₹{product.price}</Text>
           </View>
           {count ? (
             <View style={styles.modifyContainer}>
               <Pressable
-                onPress={() => onMinusButtonPress(data)}
+                onPress={() => onMinusButtonPress(product)}
                 hitSlop={16}
                 style={({ pressed }) => ({
                   marginRight: 4,
@@ -56,7 +56,7 @@ export const ListItem = memo(
               </Pressable>
               <Text style={styles.textWhite}>{count}</Text>
               <Pressable
-                onPress={() => onPlusButtonPress(data)}
+                onPress={() => onPlusButtonPress(product)}
                 hitSlop={16}
                 style={({ pressed }) => ({
                   marginLeft: 4,
@@ -68,7 +68,7 @@ export const ListItem = memo(
             </View>
           ) : (
             <Pressable
-              onPress={() => onAddButtonPress(data)}
+              onPress={() => onAddButtonPress(product)}
               style={({ pressed }) => ({
                 ...styles.addButtonContainer,
                 opacity: pressed ? 0.5 : 1,

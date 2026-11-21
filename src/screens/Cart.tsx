@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import type { NativeBottomTabNavigationProp } from '@react-navigation/bottom-tabs/unstable';
 import type { BottomTabsParamList, Product } from '../types';
-import { Action, useCart } from '../contextProviders/CartProvider';
 import { useNavigation } from '@react-navigation/native';
-import { useProductData } from '../hooks/useProductData';
+import { useProductData } from '../store/productData';
+import { decrement, increment, reset, useCartData } from '../store/cartData';
 
 type ListData = [string, { quantity: number; amount: number }];
 
@@ -25,7 +25,7 @@ export function Cart() {
   const navigation: CartNavigationProp = useNavigation();
 
   const productData = useProductData(state => state.productData);
-  const { cartState, dispatch } = useCart();
+  const cartState = useCartData();
   const [listData, setListData] = useState<ListData[]>([]);
   const [loading, setLoading] = useState(false);
   const [orderStatus, setOrderStatus] = useState<'IN_PROGRESS' | 'DELIVERED'>();
@@ -45,11 +45,11 @@ export function Cart() {
     return (
       <View style={styles.cartContainer}>
         {orderStatus === 'IN_PROGRESS' ? (
-          <>
+          <View>
             <Text style={styles.headerText}>Payment Successful.</Text>
             <View style={styles.separator} />
             <Text style={styles.headerText}>Order will be delivered soon.</Text>
-          </>
+          </View>
         ) : (
           <Text style={styles.headerText}>Order Delivered !!!</Text>
         )}
@@ -78,7 +78,6 @@ export function Cart() {
             renderItem={({ item }) => (
               <ListItem
                 item={item}
-                dispatch={dispatch}
                 product={productData.get(Number(item[0])) as Product}
               />
             )}
@@ -103,7 +102,7 @@ export function Cart() {
                     timerRefs.current.push(
                       setTimeout(() => {
                         setOrderStatus('DELIVERED');
-                        dispatch({ type: 'RESET' });
+                        reset();
 
                         timerRefs.current.push(
                           setTimeout(() => {
@@ -138,12 +137,11 @@ export function Cart() {
 
 type ListItemProps = {
   item: ListData;
-  dispatch: (action: Action) => void;
   product: Product;
 };
 
 const ListItem = memo(
-  ({ item, dispatch, product }: ListItemProps) => {
+  ({ item, product }: ListItemProps) => {
     const id = item[0];
     const cartItem = item[1];
 
@@ -168,15 +166,7 @@ const ListItem = memo(
               marginRight: 4,
               opacity: pressed ? 0.5 : 1,
             })}
-            onPress={() =>
-              dispatch({
-                type: 'DECREMENT',
-                payload: {
-                  id: product.id,
-                  price: product.price,
-                },
-              })
-            }
+            onPress={() => decrement(product.id, product.price)}
           >
             <Text style={styles.textWhite}>-</Text>
           </Pressable>
@@ -187,15 +177,7 @@ const ListItem = memo(
               marginLeft: 4,
               opacity: pressed ? 0.5 : 1,
             })}
-            onPress={() =>
-              dispatch({
-                type: 'INCREMENT',
-                payload: {
-                  id: product.id,
-                  price: product.price,
-                },
-              })
-            }
+            onPress={() => increment(product.id, product.price)}
           >
             <Text style={styles.textWhite}>+</Text>
           </Pressable>
@@ -208,8 +190,7 @@ const ListItem = memo(
     const nextItem = nextProps.item;
 
     if (prevItem[0] !== nextItem[0]) return false;
-    if (prevItem[1].amount !== nextItem[1].amount) return false;
-    if (prevItem[1].quantity !== nextItem[1].quantity) return false;
+    if (prevItem[1] !== nextItem[1]) return false;
 
     return true;
   },

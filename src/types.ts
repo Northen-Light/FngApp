@@ -19,7 +19,9 @@ export type Product = {
   imageURL: string;
 };
 
-export type ListData = { type: 'Product'; data: Product } | { type: 'Filter' };
+export type ListData =
+  | { type: 'Product'; product: Product }
+  | { type: 'Filter' };
 
 export type MultiSelect = {
   id: number;

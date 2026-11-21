@@ -28,8 +28,9 @@ import {
 } from '../constants/constants';
 import { AccordianMultiSelectView } from '../components/AccordianMultiSelectView';
 import { RadioGroupView } from '../components/RadioGroupView';
-import { useCart } from '../contextProviders/CartProvider';
-import { useProductData } from '../hooks/useProductData';
+import { useProductData } from '../store/productData';
+import { decrement, increment, reset, useCartData } from '../store/cartData';
+import { produce } from 'immer';
 
 export function ProductLanding() {
   const [listData, setListData] = useState<ListData[]>([]);
@@ -55,7 +56,8 @@ export function ProductLanding() {
   const hasMore = useRef(true);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  const { cartState, dispatch } = useCart();
+  const cartItems = useCartData(state => state.items);
+
   const { productData, setProductData } = useProductData();
 
   const loadMore = useCallback(
@@ -112,19 +114,19 @@ export function ProductLanding() {
   );
 
   const onSelectedAccordiansChange = useCallback((index: number) => {
-    setAccordianExpanded(current => {
-      const next = [...current];
-      next[index] = !next[index];
-      return next;
-    });
+    setAccordianExpanded(
+      produce(draft => {
+        draft[index] = !draft[index];
+      }),
+    );
   }, []);
 
   const onAccordianExpandedChangeSetTrue = useCallback((index: number) => {
-    setAccordianExpanded(current => {
-      const next = [...current];
-      next[index] = true;
-      return next;
-    });
+    setAccordianExpanded(
+      produce(draft => {
+        draft[index] = true;
+      }),
+    );
   }, []);
 
   const onFilterTabPress = useCallback(
@@ -145,45 +147,40 @@ export function ProductLanding() {
 
   const onSelectedFilterValuesChange = useCallback(
     (outerIndex: number, innerIndex: number) => {
-      setFilterOptions(current => {
-        const next = [
-          ...current.map(value => ({
-            filterId: value.filterId,
-            filterValueIds: [...value.filterValueIds],
-          })),
-        ];
+      setFilterOptions(
+        produce(draft => {
+          if (!selectedFilterValues[outerIndex][innerIndex]) {
+            if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
+              draft[outerIndex].filterValueIds.pop();
+            }
 
-        if (!selectedFilterValues[outerIndex][innerIndex]) {
-          if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
-            next[outerIndex].filterValueIds.pop();
+            draft[outerIndex].filterValueIds.push(
+              FILTERS[outerIndex].values[innerIndex].id,
+            );
+          } else {
+            const removeIndex = draft[outerIndex].filterValueIds.indexOf(
+              FILTERS[outerIndex].values[innerIndex].id,
+            );
+            draft[outerIndex].filterValueIds.splice(removeIndex, 1);
           }
+          return draft;
+        }),
+      );
 
-          next[outerIndex].filterValueIds.push(
-            FILTERS[outerIndex].values[innerIndex].id,
-          );
-        } else {
-          const removeIndex = next[outerIndex].filterValueIds.indexOf(
-            FILTERS[outerIndex].values[innerIndex].id,
-          );
-          next[outerIndex].filterValueIds.splice(removeIndex, 1);
-        }
-        return next;
-      });
-
-      setSelectedFilterValues(current => {
-        const next = [...current.map(value => [...value])];
-
-        if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
-          for (let i = 0; i < next[outerIndex].length; i++) {
-            if (i !== innerIndex && next[outerIndex][i]) {
-              next[outerIndex][i] = false;
+      setSelectedFilterValues(
+        produce(draft => {
+          if (FILTERS[outerIndex].type === 'SINGLE_SELECT') {
+            for (let i = 0; i < draft[outerIndex].length; i++) {
+              if (i !== innerIndex && draft[outerIndex][i]) {
+                draft[outerIndex][i] = false;
+              }
             }
           }
-        }
 
-        next[outerIndex][innerIndex] = !next[outerIndex][innerIndex];
-        return next;
-      });
+          draft[outerIndex][innerIndex] = !draft[outerIndex][innerIndex];
+          return draft;
+        }),
+      );
     },
     [selectedFilterValues],
   );
@@ -249,7 +246,7 @@ export function ProductLanding() {
       productData.forEach(value => {
         next.push({
           type: 'Product',
-          data: value,
+          product: value,
         });
       });
 
@@ -266,11 +263,11 @@ export function ProductLanding() {
     hasMore.current = true;
 
     setProductData([]);
-    dispatch({ type: 'RESET' });
+    reset();
     loadMore({ filterOptions, sortOptions }, controller);
 
     return () => controller.abort();
-  }, [filterOptions, sortOptions, loadMore, setProductData, dispatch]);
+  }, [filterOptions, sortOptions, loadMore, setProductData]);
 
   useEffect(() => {
     const onBackPress = () => {
@@ -289,35 +286,13 @@ export function ProductLanding() {
     return () => subscription.remove();
   }, []);
 
-  const onPlusButtonPress = useCallback(
-    (data: Product) => {
-      dispatch({
-        type: 'INCREMENT',
-        payload: { id: data.id, price: data.price },
-      });
-    },
-    [dispatch],
-  );
+  const onPlusButtonPress = useCallback((product: Product) => {
+    increment(product.id, product.price);
+  }, []);
 
-  const onMinusButtonPress = useCallback(
-    (data: Product) => {
-      dispatch({
-        type: 'DECREMENT',
-        payload: { id: data.id, price: data.price },
-      });
-    },
-    [dispatch],
-  );
-
-  const onAddButtonPress = useCallback(
-    (data: Product) => {
-      dispatch({
-        type: 'INCREMENT',
-        payload: { id: data.id, price: data.price },
-      });
-    },
-    [dispatch],
-  );
+  const onMinusButtonPress = useCallback((product: Product) => {
+    decrement(product.id, product.price);
+  }, []);
 
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
@@ -342,11 +317,11 @@ export function ProductLanding() {
             case 'Product':
               return (
                 <ListItem
-                  data={item.data}
-                  count={cartState.items[item.data.id]?.quantity ?? 0}
+                  product={item.product}
+                  count={cartItems[item.product.id]?.quantity ?? 0}
                   onPlusButtonPress={onPlusButtonPress}
                   onMinusButtonPress={onMinusButtonPress}
-                  onAddButtonPress={onAddButtonPress}
+                  onAddButtonPress={onPlusButtonPress}
                 />
               );
           }
