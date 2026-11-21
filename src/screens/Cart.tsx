@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Pressable,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import type { NativeBottomTabNavigationProp } from '@react-navigation/bottom-tabs/unstable';
 import type { BottomTabsParamList, Product } from '../types';
@@ -31,6 +32,7 @@ export function Cart() {
   const [orderStatus, setOrderStatus] = useState<'IN_PROGRESS' | 'DELIVERED'>();
 
   const timerRefs = useRef<number[]>([]);
+  const backHandlerSubRef = useRef<{ remove: () => void }>(null);
 
   useEffect(() => {
     const timers = timerRefs.current;
@@ -94,23 +96,45 @@ export function Cart() {
             <Pressable
               onPress={() => {
                 setLoading(true);
+
+                backHandlerSubRef.current = BackHandler.addEventListener(
+                  'backPress',
+                  () => true,
+                );
+
+                navigation.setOptions({
+                  tabBarStyle: {
+                    display: 'none',
+                  },
+                });
+
                 timerRefs.current.push(
                   setTimeout(() => {
                     setLoading(false);
                     setOrderStatus('IN_PROGRESS');
+                    reset();
+
+                    navigation.setOptions({
+                      tabBarStyle: {
+                        display: undefined,
+                      },
+                    });
+
+                    backHandlerSubRef.current?.remove();
 
                     timerRefs.current.push(
                       setTimeout(() => {
                         setOrderStatus('DELIVERED');
-                        reset();
 
                         timerRefs.current.push(
                           setTimeout(() => {
                             setOrderStatus(undefined);
-                            navigation.navigate('Home');
+                            if (navigation.isFocused()) {
+                              navigation.navigate('Home');
+                            }
                           }, 1000),
                         );
-                      }, 3000),
+                      }, 10000),
                     );
                   }, 3000),
                 );
