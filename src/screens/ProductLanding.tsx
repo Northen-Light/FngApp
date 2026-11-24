@@ -52,7 +52,7 @@ export function ProductLanding() {
   const [sortOptions, setSortOptions] = useState<SortOptions[]>([]);
   const [operation, setOperation] = useState<Operation>('FILTER');
   const [searchText, setSearchText] = useState('');
-  const debouncedSearchText = useDebounce(searchText, 1000);
+  const debouncedSearchText = useDebounce(searchText);
   const [searchOptions, setSearchOptions] = useState<SearchOptions>({
     text: '',
   });
