@@ -315,6 +315,10 @@ export function ProductLanding() {
     setSearchText(text);
   }, []);
 
+  const onClose = useCallback(() => {
+    setSearchText('');
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
       <FlashList
@@ -335,6 +339,7 @@ export function ProductLanding() {
                   <SearchBar
                     onChangeText={onChangeText}
                     searchText={searchText}
+                    onClose={onClose}
                   />
                   <TabBarFilter items={FILTERS} onTabPress={onFilterTabPress} />
                 </View>

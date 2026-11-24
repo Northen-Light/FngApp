@@ -19,7 +19,7 @@ export const fetchProductList = (
     let filteredData = [...data];
 
     filteredData = filteredData.filter(d =>
-      d.name.toLowerCase().includes(searchOptions.text.toLowerCase()),
+      d.name.toLowerCase().includes(searchOptions.text.trim().toLowerCase()),
     );
 
     if (filterOptions[0].filterValueIds.length > 0) {
