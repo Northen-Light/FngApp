@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, ActivityIndicator, BackHandler } from 'react-native';
+import { StyleSheet, ActivityIndicator, BackHandler, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import BottomSheet, {
@@ -7,18 +7,20 @@ import BottomSheet, {
   BottomSheetScrollView,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
+import { produce } from 'immer';
 
 import type {
   FilterOptions,
   ListData,
   Operation,
   Product,
+  SearchOptions,
   SortOptions,
 } from '../types';
 
 import { fetchProductList } from '../network/fetchProductList';
 import { ListItem } from '../components/ListItem';
-import { ListHeaderTabBar } from '../components/ListHeaderTabBar';
+import { TabBarFilter } from '../components/TabBarFilter';
 import {
   FILTER_HEADER_TEXT,
   FILTERS,
@@ -30,7 +32,8 @@ import { AccordianMultiSelectView } from '../components/AccordianMultiSelectView
 import { RadioGroupView } from '../components/RadioGroupView';
 import { useProductData } from '../store/productData';
 import { decrement, increment, reset, useCartData } from '../store/cartData';
-import { produce } from 'immer';
+import { SearchBar } from '../components/SearchBar';
+import { useDebounce } from '../hooks/useDebounce';
 
 export function ProductLanding() {
   const [listData, setListData] = useState<ListData[]>([]);
@@ -48,6 +51,11 @@ export function ProductLanding() {
   );
   const [sortOptions, setSortOptions] = useState<SortOptions[]>([]);
   const [operation, setOperation] = useState<Operation>('FILTER');
+  const [searchText, setSearchText] = useState('');
+  const debouncedSearchText = useDebounce(searchText, 1000);
+  const [searchOptions, setSearchOptions] = useState<SearchOptions>({
+    text: '',
+  });
   const sheetIndexRef = useRef(-1);
 
   const pageNumber = useRef(0);
@@ -62,7 +70,11 @@ export function ProductLanding() {
 
   const loadMore = useCallback(
     async (
-      options?: { filterOptions: FilterOptions[]; sortOptions: SortOptions[] },
+      options?: {
+        filterOptions: FilterOptions[];
+        sortOptions: SortOptions[];
+        searchOptions: SearchOptions;
+      },
       controller?: AbortController,
     ) => {
       setLoading(true);
@@ -74,6 +86,7 @@ export function ProductLanding() {
           PAGE_ITEMS,
           options?.filterOptions,
           options?.sortOptions,
+          options?.searchOptions,
           controller,
         );
         console.log(response);
@@ -100,8 +113,8 @@ export function ProductLanding() {
   const onEndReachedCallback = useCallback(async () => {
     if (isInitialLoad.current || isLoading.current || !hasMore.current) return;
 
-    loadMore({ filterOptions, sortOptions });
-  }, [filterOptions, loadMore, sortOptions]);
+    loadMore({ filterOptions, sortOptions, searchOptions });
+  }, [filterOptions, loadMore, sortOptions, searchOptions]);
 
   const expandBottomSheet = useCallback(
     () => bottomSheetRef.current?.expand(),
@@ -241,7 +254,7 @@ export function ProductLanding() {
 
   useEffect(() => {
     setListData(() => {
-      const next: ListData[] = [{ type: 'Filter' }];
+      const next: ListData[] = [{ type: 'Controls' }];
 
       productData.forEach(value => {
         next.push({
@@ -264,10 +277,10 @@ export function ProductLanding() {
 
     setProductData([]);
     reset();
-    loadMore({ filterOptions, sortOptions }, controller);
+    loadMore({ filterOptions, sortOptions, searchOptions }, controller);
 
     return () => controller.abort();
-  }, [filterOptions, sortOptions, loadMore, setProductData]);
+  }, [filterOptions, sortOptions, loadMore, setProductData, searchOptions]);
 
   useEffect(() => {
     const onBackPress = () => {
@@ -286,6 +299,10 @@ export function ProductLanding() {
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    setSearchOptions({ text: debouncedSearchText });
+  }, [debouncedSearchText]);
+
   const onPlusButtonPress = useCallback((product: Product) => {
     increment(product.id, product.price);
   }, []);
@@ -294,25 +311,33 @@ export function ProductLanding() {
     decrement(product.id, product.price);
   }, []);
 
+  const onChangeText = useCallback((text: string) => {
+    setSearchText(text);
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.profileContainer}>
       <FlashList
         numColumns={2}
         stickyHeaderIndices={[0]}
         data={listData}
+        keyboardShouldPersistTaps="handled"
         overrideItemLayout={(layout, item) => {
-          if (item.type === 'Filter') {
+          if (item.type === 'Controls') {
             layout.span = 2;
           }
         }}
         renderItem={({ item }) => {
           switch (item.type) {
-            case 'Filter':
+            case 'Controls':
               return (
-                <ListHeaderTabBar
-                  items={FILTERS}
-                  onTabPress={onFilterTabPress}
-                />
+                <View>
+                  <SearchBar
+                    onChangeText={onChangeText}
+                    searchText={searchText}
+                  />
+                  <TabBarFilter items={FILTERS} onTabPress={onFilterTabPress} />
+                </View>
               );
             case 'Product':
               return (
@@ -355,8 +380,6 @@ export function ProductLanding() {
 const styles = StyleSheet.create({
   profileContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   flashList: {
     flex: 1,

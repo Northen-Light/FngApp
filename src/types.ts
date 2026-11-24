@@ -21,7 +21,7 @@ export type Product = {
 
 export type ListData =
   | { type: 'Product'; product: Product }
-  | { type: 'Filter' };
+  | { type: 'Controls' };
 
 export type MultiSelect = {
   id: number;
@@ -37,6 +37,10 @@ export type FilterOptions = {
 
 export type SortOptions = {
   sortId: number;
+};
+
+export type SearchOptions = {
+  text: string;
 };
 
 export type Operation = 'SORT' | 'FILTER';

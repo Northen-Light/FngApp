@@ -1,4 +1,4 @@
-import { FilterOptions, Product, SortOptions } from '../types';
+import { FilterOptions, Product, SearchOptions, SortOptions } from '../types';
 
 const data: Product[] = require('../mockData/fruits_vegetables_500.json');
 
@@ -12,18 +12,25 @@ export const fetchProductList = (
   pageItems: number = 50,
   filterOptions: FilterOptions[] = [],
   sortOptions: SortOptions[] = [],
+  searchOptions: SearchOptions = { text: '' },
   controller?: AbortController,
 ): Promise<FetchProductListResponse> => {
   return new Promise((res, rej) => {
     let filteredData = [...data];
 
+    filteredData = filteredData.filter(d =>
+      d.name.toLowerCase().includes(searchOptions.text.toLowerCase()),
+    );
+
     if (filterOptions[0].filterValueIds.length > 0) {
       if (filterOptions[0].filterValueIds.includes(12)) {
-        filteredData = [...data.filter(d => d.price <= 150)];
+        filteredData = filteredData.filter(d => d.price <= 150);
       } else if (filterOptions[0].filterValueIds.includes(13)) {
-        filteredData = [...data.filter(d => d.price > 150 && d.price <= 275)];
+        filteredData = filteredData.filter(
+          d => d.price > 150 && d.price <= 275,
+        );
       } else if (filterOptions[0].filterValueIds.includes(14)) {
-        filteredData = [...data.filter(d => d.price > 275)];
+        filteredData = filteredData.filter(d => d.price > 275);
       }
     }
 
@@ -32,15 +39,13 @@ export const fetchProductList = (
         filterOptions[1].filterValueIds.includes(21) ||
         filterOptions[1].filterValueIds.includes(22)
       ) {
-        filteredData = [
-          ...filteredData.filter(
-            d =>
-              (filterOptions[1].filterValueIds.includes(21) &&
-                d.type === 'fruit') ||
-              (filterOptions[1].filterValueIds.includes(22) &&
-                d.type === 'vegetable'),
-          ),
-        ];
+        filteredData = filteredData.filter(
+          d =>
+            (filterOptions[1].filterValueIds.includes(21) &&
+              d.type === 'fruit') ||
+            (filterOptions[1].filterValueIds.includes(22) &&
+              d.type === 'vegetable'),
+        );
       }
     }
 
